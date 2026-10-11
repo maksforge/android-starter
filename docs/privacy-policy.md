@@ -28,8 +28,8 @@ Everything you record is stored **only in the app's private storage on your own 
 readable only by the app.
 
 There is no analytics, no crash reporting, no advertising, and no third-party SDK that phones home.
-The one Google library in the app, which handles tips through Google Play, carries usage logging of
-its own; without the `INTERNET` permission it has no way to send it.
+The Google Play Billing library, which handles tips, carries usage logging of its own; without the
+`INTERNET` permission it has no way to send it.
 
 ## What the app can access, and why
 
