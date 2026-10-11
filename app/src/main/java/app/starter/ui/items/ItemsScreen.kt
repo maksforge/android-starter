@@ -129,7 +129,7 @@ fun ItemsScreen(
 }
 
 /**
- * The one time the app mentions the tip unasked (ADR-0007). Either button answers it for good, and
+ * The one time the app mentions the tip unasked (ADR-0007). Either button answers it for this install, and
  * nothing here says what a tip buys, because it buys nothing.
  */
 @Composable
