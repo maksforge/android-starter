@@ -24,7 +24,7 @@
     <string name="item_pick_image">Wybierz zdjęcie</string>
     <string name="items_empty">Nic tu jeszcze nie ma. Dotknij +, aby dodać pierwszą rzecz.</string>
     <string name="items_tip_ask_title">Ta aplikacja jest darmowa i taka zostanie</string>
-    <string name="items_tip_ask_body">Jeśli ci się przydaje, możesz zostawić twórcy napiwek. Niczego nie odblokowuje, a aplikacja więcej o to nie zapyta.</string>
+    <string name="items_tip_ask_body">Jeśli ci się przydaje, możesz zostawić twórcy napiwek. Niczego nie odblokowuje, a na tym telefonie aplikacja więcej o to nie zapyta.</string>
     <string name="items_tip_ask_accept">Zostaw napiwek</string>
     <string name="items_tip_ask_decline">Nie, dziękuję</string>
     <plurals name="items_count">

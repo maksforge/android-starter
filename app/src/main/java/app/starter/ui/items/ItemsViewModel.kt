@@ -71,7 +71,7 @@ class ItemsViewModel(
         }
     }
 
-    /** Either answer — *Leave a tip* or *No thanks* — ends the ask for good. */
+    /** Either answer — *Leave a tip* or *No thanks* — ends the ask on this install. */
     fun answerTipAsk() {
         viewModelScope.launch { preferences.markTipAsked() }
     }
