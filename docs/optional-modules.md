@@ -113,8 +113,11 @@ the reminders are gone.
   `ACCESS_NETWORK_STATE`, `FOREGROUND_SERVICE` — and `RECEIVE_BOOT_COMPLETED` for good measure. If you
   keep a boot receiver but drop WorkManager, **declare `RECEIVE_BOOT_COMPLETED` yourself first**, or the
   receiver stops being called with nothing to say so. `ACCESS_NETWORK_STATE` on an app with no
-  `INTERNET` is a line a Play reviewer can ask about; removing WorkManager removes the question.
-- `scripts/aab-permissions.py`'s EXPECTED rows for all of the above, in the same commit.
+  `INTERNET` is a line a Play reviewer can ask about, and **the tip merges it too**: removing
+  WorkManager removes the question only if the tip goes as well.
+- `scripts/aab-permissions.py`'s EXPECTED rows for all of the above, in the same commit — except
+  `ACCESS_NETWORK_STATE` while the tip stays, which then belongs to billing alone: keep the row, and
+  its line in `play-app-content.md`, and name billing as the only owner.
 - `scripts/device-gate.py`'s reminder checks, if nothing schedules: `ALARM_TAG` and the alarm reads
   (`app_alarms`, `armed`, `disarmed`), the channel pair (`channel_importance`, `set_channel`), the
   `--reboot` arm (`wait_for_unlock`, `reboot_and_wait`), and the exact-alarm line. Keep the autostart
