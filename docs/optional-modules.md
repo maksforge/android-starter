@@ -135,17 +135,23 @@ the reminders are gone.
 ### The tip (Play Billing)
 
 - `tip/`, `test/…/tip/`, `ui/support/SupportViewModel.kt` and the tip section in `SupportScreen.kt`
-- The one-time ask: `TipAskCard` and the `onOpenSupport` route in `ui/items/`, `showTipAsk` and
-  `answerTipAsk` in `ItemsViewModel`, and `AppPreferences.tipAsked` / `markTipAsked`
+- The one-time ask: `TipAskCard` and `ItemsScreen`'s `onOpenSupport` parameter in `ui/items/`, the
+  `onOpenSupport` the `Items` entry passes in `Navigation.kt`, `showTipAsk` and `answerTipAsk` in
+  `ItemsViewModel`, and `AppPreferences.tipAsked` / `markTipAsked`
 - `AppContainer.tipJar` and `installedAt`; `settleTipsOnEveryForeground` in `MainApplication`
 - The `items_tip_ask_*` and `support_tip*` strings, in every language
 - Gradle: `billing.ktx`, `androidx.lifecycle.process`, and licensee's `allowUrl` for Google's terms
 - Manifest: the `INTERNET` `tools:node="remove"` — harmless once billing is gone, but it then
   removes nothing and reads as a reason that no longer exists
-- `scripts/aab-permissions.py`: the `BILLING` row in EXPECTED
-- `play-app-content.md`'s *Content rating* back to all No, Data safety point 5 and *The tip*;
-  the privacy policy's billing bullet and tip paragraph; `RELEASING.md`'s *Selling the tip*; the
-  tip section of `DOD.md`
+- `scripts/aab-permissions.py`: the `BILLING` row in EXPECTED, and billing's name in the
+  `ACCESS_NETWORK_STATE` row — the whole row if WorkManager has already gone
+- `play-app-content.md`: the `BILLING` row and the `datatransport` paragraph under *What the
+  artifact carries* (and billing's name in the `ACCESS_NETWORK_STATE` row), *Content rating* back to
+  all No, Data safety point 5 and *The tip*
+- The privacy policy's billing-library sentence under *The app collects nothing*, its billing bullet
+  and its tip paragraph
+- `CLAUDE.md`'s Play Billing row in Stack and `tip/` line in Layout; `CONTEXT.md`'s **Tip** row
+- `RELEASING.md`'s *Selling the tip*; the tip section of `DOD.md`
 - ADR-0007 gets its amendment.
 
 ### The placeholder domain
