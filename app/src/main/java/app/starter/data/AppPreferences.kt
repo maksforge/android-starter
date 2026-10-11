@@ -114,9 +114,9 @@ class AppPreferences(
     val backupFolderUri: Flow<String?> = store.data.map { it[Keys.BACKUP_FOLDER_URI] }
 
     /**
-     * Whether the home screen's one tip ask has been answered, either way (ADR-0007). A setting rather
-     * than live state, so Auto Backup carrying it to the next phone is exactly right: someone who has
-     * answered is not asked again there.
+     * Whether the home screen's one tip ask has been answered, either way (ADR-0007). It does not reach
+     * the next phone: `AppBackupAgent` backs up only the database and the thumbnails (ADR-0005), so
+     * after a move the user is asked once more, a month after the new install.
      */
     val tipAsked: Flow<Boolean> = store.data.map { it[Keys.TIP_ASKED] ?: false }
 

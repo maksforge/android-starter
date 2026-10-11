@@ -14,8 +14,8 @@ val TIP_ASK_AFTER: Duration = Duration.ofDays(30)
  * the app** (ADR-0007).
  *
  * [installedAt] is the package's `firstInstallTime`, which a restore onto a new phone does not carry,
- * so a moved install waits its own month. [asked] lives in preferences, which Auto Backup carries, so
- * a user who has answered is never asked on their next phone.
+ * so a moved install waits its own month. [asked] lives in preferences, which `AppBackupAgent` leaves
+ * out (ADR-0005), so a user who answered is asked once more on their next phone, after that month.
  *
  * Add a guard for any moment the ask would be tone-deaf: the first app to adopt this never asks while
  * one of the user's animals is unwell.
