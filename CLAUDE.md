@@ -44,6 +44,7 @@ let us do otherwise".">
 | WorkManager + exact alarms | Two mechanisms on purpose — ADR-0003 |
 | Photo Picker + `TakePicture` intent, **not CameraX** | Far less code; the system camera is fine here |
 | Coil 3 images | Compose-native, local files only |
+| Play Billing (`tip/`), for the tip only | Unlocks nothing; adds `BILLING`, and its merged `INTERNET` is removed — ADR-0007 |
 | On-device storage only | No backend. Backup per ADR-0005 |
 
 ## House rules
@@ -116,6 +117,8 @@ app/src/main/java/<namespace>/
   data/backup/ export, restore, the manifest, the WAL checkpoint
   media/       MediaFiles.kt — the single path for persisting images, kind-aware
   theme/       generated palette, type scale, spacing, the night-mode window half
+  tip/         the tip through Play Billing, held by AppContainer so a purchase finishes after its
+               screen is gone, and the rule for its one ask on the home screen (ADR-0007)
   ui/          Compose screens + ViewModels, one package per area
   work/        WorkManager, receivers, notification channels, permission asks
 

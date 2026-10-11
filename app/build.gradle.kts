@@ -218,6 +218,9 @@ licensee {
     // Exactly one artifact: androidx's repackaging of protobuf-javalite, pulled in behind DataStore.
     // Nobody knows this is in the build until the plugin is run — which is the argument for it.
     allow("BSD-3-Clause")
+    // Google Play services, behind the Play Billing Library (the tip, ADR-0007). Vendor terms rather
+    // than an open licence, so the Licences screen links them instead of shipping their text.
+    allowUrl("https://developer.android.com/studio/terms.html")
 }
 
 /**
@@ -309,6 +312,11 @@ dependencies {
     androidTestImplementation(libs.androidx.room.testing)
     androidTestImplementation(libs.androidx.work.testing)
     implementation(libs.androidx.datastore.preferences)
+
+    // The tip (ADR-0007). Its transitive telemetry merges INTERNET, which the manifest removes again.
+    implementation(libs.billing.ktx)
+    // Consumes a cleared tip whenever the app comes to the foreground — see MainApplication.
+    implementation(libs.androidx.lifecycle.process)
 
     // The export manifest inside a backup zip. JSON rather than a hand-rolled format, because the
     // manifest is what a restore's promise is sourced from. Enums serialise by *name*, which is the

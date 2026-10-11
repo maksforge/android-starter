@@ -1,8 +1,10 @@
 package app.starter.ui.items
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -17,6 +19,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -35,6 +38,7 @@ import app.starter.ui.common.EmptyState
 fun ItemsScreen(
     onOpenItem: (String) -> Unit,
     onAddItem: () -> Unit,
+    onOpenSupport: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: ItemsViewModel =
         viewModel(factory = ItemsViewModel.Factory, extras = appViewModelExtras()),
@@ -84,6 +88,17 @@ fun ItemsScreen(
                             modifier = Modifier.padding(bottom = Spacing.tight),
                         )
                     }
+                    if (state.showTipAsk) {
+                        item(key = "tip-ask") {
+                            TipAskCard(
+                                onTip = {
+                                    viewModel.answerTipAsk()
+                                    onOpenSupport()
+                                },
+                                onDecline = viewModel::answerTipAsk,
+                            )
+                        }
+                    }
                     // `key` is what lets Compose recycle the right row when the list reorders. With
                     // no key it matches by index, so inserting at the top re-renders everything and
                     // any per-row state moves to the wrong row.
@@ -109,6 +124,35 @@ fun ItemsScreen(
                         }
                     }
                 }
+        }
+    }
+}
+
+/**
+ * The one time the app mentions the tip unasked (ADR-0007). Either button answers it for good, and
+ * nothing here says what a tip buys, because it buys nothing.
+ */
+@Composable
+private fun TipAskCard(
+    onTip: () -> Unit,
+    onDecline: () -> Unit,
+) {
+    Card(modifier = Modifier.fillMaxWidth().padding(bottom = Spacing.tight)) {
+        Column(modifier = Modifier.padding(Spacing.base)) {
+            Text(stringResource(R.string.items_tip_ask_title), style = MaterialTheme.typography.titleMedium)
+            Text(
+                text = stringResource(R.string.items_tip_ask_body),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = Spacing.hair),
+            )
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(Spacing.tight),
+                modifier = Modifier.padding(top = Spacing.tight),
+            ) {
+                TextButton(onClick = onTip) { Text(stringResource(R.string.items_tip_ask_accept)) }
+                TextButton(onClick = onDecline) { Text(stringResource(R.string.items_tip_ask_decline)) }
+            }
         }
     }
 }

@@ -1,6 +1,8 @@
 package app.starter
 
 import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
@@ -8,7 +10,9 @@ import app.starter.data.AppPreferences
 import app.starter.data.ItemRepository
 import app.starter.data.buildAppDatabase
 import app.starter.media.MediaFiles
+import app.starter.tip.TipJar
 import kotlinx.coroutines.CoroutineScope
+import java.time.Instant
 
 /**
  * `internal` rather than private: [MainApplication] holds the one [AppPreferences] over this store
@@ -39,7 +43,7 @@ internal val Context.preferencesStore: DataStore<Preferences> by preferencesData
 class AppContainer(
     context: Context,
     val preferences: AppPreferences,
-    @Suppress("unused") private val applicationScope: CoroutineScope,
+    applicationScope: CoroutineScope,
 ) {
     private val appContext = context.applicationContext
 
@@ -53,4 +57,23 @@ class AppContainer(
     val media by lazy { MediaFiles(appContext) }
 
     val items by lazy { ItemRepository(database.itemDao(), media) }
+
+    /**
+     * The tip (ADR-0007). Here rather than in a `ViewModel` because a purchase can finish after the
+     * screen that opened Play's sheet is gone, and it still has to be consumed — see [TipJar].
+     */
+    val tipJar = TipJar(appContext, applicationScope)
+
+    /** When this package was first installed on this phone — the tip ask's clock, not a restore's. */
+    val installedAt: Instant by lazy {
+        val packageManager = appContext.packageManager
+        val info =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                packageManager.getPackageInfo(appContext.packageName, PackageManager.PackageInfoFlags.of(0))
+            } else {
+                @Suppress("DEPRECATION")
+                packageManager.getPackageInfo(appContext.packageName, 0)
+            }
+        Instant.ofEpochMilli(info.firstInstallTime)
+    }
 }

@@ -7,12 +7,18 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import app.starter.MainApplication
+import app.starter.data.AppPreferences
 import app.starter.data.ItemEntity
 import app.starter.data.ItemRepository
+import app.starter.tip.TipJar
+import app.starter.tip.tipAskDue
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
+import java.time.Instant
 
 /**
  * **One immutable data class for the whole screen's state.**
@@ -27,10 +33,15 @@ import kotlinx.coroutines.flow.stateIn
 data class ItemsUiState(
     val items: List<ItemEntity> = emptyList(),
     val loading: Boolean = true,
+    /** The tip's one ask (ADR-0007). False wherever Play will not sell a tip: nothing is asked for that cannot be bought. */
+    val showTipAsk: Boolean = false,
 )
 
 class ItemsViewModel(
     repository: ItemRepository,
+    private val preferences: AppPreferences,
+    tipJar: TipJar,
+    installedAt: Instant,
 ) : ViewModel() {
     /**
      * Kotlin note: `stateIn` turns a cold `Flow` into a hot `StateFlow` with a current value — the
@@ -43,10 +54,27 @@ class ItemsViewModel(
      * `Lazily` would never release.
      */
     val state: StateFlow<ItemsUiState> =
-        repository
-            .observeAll()
-            .map { items -> ItemsUiState(items = items, loading = false) }
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ItemsUiState())
+        combine(repository.observeAll(), preferences.tipAsked, tipJar.offers) { items, asked, offers ->
+            ItemsUiState(
+                items = items,
+                loading = false,
+                showTipAsk = offers.isNotEmpty() && tipAskDue(asked, items.size, installedAt, Instant.now()),
+            )
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ItemsUiState())
+
+    init {
+        // Prices are asked for only once the ask could otherwise be due — one product query saved
+        // on every other visit. The binding itself happens on every foreground anyway, to settle tips.
+        viewModelScope.launch {
+            val items = repository.observeAll().first().size
+            if (tipAskDue(preferences.tipAsked.first(), items, installedAt, Instant.now())) tipJar.refresh()
+        }
+    }
+
+    /** Either answer — *Leave a tip* or *No thanks* — ends the ask for good. */
+    fun answerTipAsk() {
+        viewModelScope.launch { preferences.markTipAsked() }
+    }
 
     companion object {
         /**
@@ -58,7 +86,8 @@ class ItemsViewModel(
             viewModelFactory {
                 initializer {
                     val app = this[APPLICATION_KEY] as MainApplication
-                    ItemsViewModel(app.container.items)
+                    val container = app.container
+                    ItemsViewModel(container.items, container.preferences, container.tipJar, container.installedAt)
                 }
             }
     }

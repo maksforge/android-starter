@@ -93,6 +93,20 @@ close. Whenever `APP_SCHEMA_VERSION` changes, all five hold before the release g
 - [ ] **Decide the `applicationId` deliberately.** It is fixed the moment the Play entry is created —
       not renameable, not transferable without losing every install and review.
 
+## The tip — open until a real purchase is consumed
+
+ADR-0007. The code is in; these are the parts only Play and a phone can prove. The steps are
+*Selling the tip* in [`RELEASING.md`](RELEASING.md).
+
+- [ ] **Keep it or delete it, before the first upload.** Deleting is in
+      [`optional-modules.md`](optional-modules.md); keeping it costs Brazil's rating (14+).
+- [ ] **A build with billing on internal testing**, then the four products created and active.
+- [ ] **One purchase from a licence tester** on the internal install, ending in the thank-you line,
+      and the *same* tip bought again — the second purchase is the proof that the first was consumed.
+- [ ] **The debug build shows no tip section and no card.** Play has never heard of the `.debug`
+      package, so absent is the correct reading, not a failure.
+- [ ] **Content rating re-submitted** with *digital purchases* Yes, before production.
+
 ## Before the next upload
 
 Re-declarations a change owes Play, written down the day the change merges and ticked when the

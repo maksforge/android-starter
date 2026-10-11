@@ -29,6 +29,15 @@
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
 
     <!--
+        The Play Billing Library (the tip, ADR-0007) depends on Google's `datatransport`, whose
+        manifest merges INTERNET for the library's own usage logging. Billing never needs it: a
+        purchase is an IPC call to the Play Store app, which does the networking in its own process.
+        Removed here so the logging has no route off the phone and the privacy policy stays true.
+        It also merges ACCESS_NETWORK_STATE, which stays: WorkManager declares it too.
+    -->
+    <uses-permission android:name="android.permission.INTERNET" tools:node="remove" />
+
+    <!--
         Package visibility (API 30+) for the one OEM screen the app offers to open: Xiaomi's
         autostart manager, which on HyperOS decides whether background work runs at all. Without
         this declaration `resolveActivity` returns null on a phone where the activity exists, and

@@ -38,6 +38,11 @@
     <string name="item_pick_image">Choose a picture</string>
     <!-- Says what to do, not that there is nothing. -->
     <string name="items_empty">Nothing here yet. Tap + to add your first item.</string>
+    <!-- The tip's one ask (ADR-0007): once per install, then never again -->
+    <string name="items_tip_ask_title">This app is free, and stays free</string>
+    <string name="items_tip_ask_body">If it is useful to you, you can leave the developer a tip. It unlocks nothing, and the app will not ask again.</string>
+    <string name="items_tip_ask_accept">Leave a tip</string>
+    <string name="items_tip_ask_decline">No thanks</string>
     <plurals name="items_count">
         <item quantity="one">%d item</item>
         <item quantity="other">%d items</item>
@@ -95,6 +100,12 @@
     <string name="support_rate">Rate this app on Google Play</string>
     <string name="support_rate_hint">Opens this app on Google Play. Rating is optional and unlocks nothing.</string>
     <string name="support_no_play">No Google Play or web browser on this phone to open.</string>
+    <!-- The tip (ADR-0007): a payment to the developer that unlocks nothing. Never "donate" or
+         "support the project". The buttons are Play's own formatted prices, not strings -->
+    <string name="support_tip">Tip the developer</string>
+    <string name="support_tip_hint">A one-off tip, paid through Google Play. It unlocks nothing, because nothing in this app is locked.</string>
+    <string name="support_tip_thanks">Thank you. It means a lot.</string>
+    <string name="support_tip_pending">Your payment is still being processed. Google Play will finish it.</string>
 
     <!-- Backup -->
     <string name="backup_explainer">Everything stays on this phone. A backup is a single file you keep wherever you like.</string>

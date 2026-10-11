@@ -116,6 +116,7 @@ fun MainNavigation(modifier: Modifier = Modifier) {
                         ItemsScreen(
                             onOpenItem = { id -> backStack.add(ItemDetail(id)) },
                             onAddItem = { backStack.add(ItemEditor()) },
+                            onOpenSupport = { backStack.add(Support) },
                         )
                     }
                     entry<ItemDetail> { key ->

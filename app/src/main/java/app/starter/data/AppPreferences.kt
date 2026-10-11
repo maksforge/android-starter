@@ -46,6 +46,7 @@ class AppPreferences(
         val REMINDERS_ENABLED = booleanPreferencesKey("reminders_enabled")
         val ONBOARDING_DONE = booleanPreferencesKey("onboarding_done")
         val BACKUP_FOLDER_URI = stringPreferencesKey("backup_folder_uri")
+        val TIP_ASKED = booleanPreferencesKey("tip_asked")
 
         /** What *Restore to default* removes: everything the user chose, so each reads its default again. */
         val SETTINGS: List<Preferences.Key<*>> =
@@ -63,6 +64,7 @@ class AppPreferences(
             listOf(
                 ONBOARDING_DONE,
                 BACKUP_FOLDER_URI,
+                TIP_ASKED,
             )
     }
 
@@ -112,6 +114,13 @@ class AppPreferences(
     val backupFolderUri: Flow<String?> = store.data.map { it[Keys.BACKUP_FOLDER_URI] }
 
     /**
+     * Whether the home screen's one tip ask has been answered, either way (ADR-0007). A setting rather
+     * than live state, so Auto Backup carrying it to the next phone is exactly right: someone who has
+     * answered is not asked again there.
+     */
+    val tipAsked: Flow<Boolean> = store.data.map { it[Keys.TIP_ASKED] ?: false }
+
+    /**
      * The theme mode, read once, before any Activity exists.
      *
      * The one place a `suspend` read is worth its cost: `MainApplication.onCreate` needs the answer
@@ -135,6 +144,10 @@ class AppPreferences(
 
     suspend fun setOnboardingDone(done: Boolean) {
         store.edit { it[Keys.ONBOARDING_DONE] = done }
+    }
+
+    suspend fun markTipAsked() {
+        store.edit { it[Keys.TIP_ASKED] = true }
     }
 
     suspend fun setBackupFolderUri(uri: String?) {
