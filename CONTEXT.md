@@ -13,6 +13,7 @@ user-facing word genuinely differ, both are written here with the difference sta
 | Term | Means | Not |
 | --- | --- | --- |
 | **Item** | *the placeholder — replace it* | |
+| **Tip** | a one-off payment to the developer through Google Play that **unlocks nothing** (ADR-0007). The home screen mentions it once per install; Help and feedback offers it for good | donation, support the project, premium, supporter |
 
 ## Words we deliberately avoid
 

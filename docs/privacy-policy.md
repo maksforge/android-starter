@@ -28,6 +28,8 @@ Everything you record is stored **only in the app's private storage on your own 
 readable only by the app.
 
 There is no analytics, no crash reporting, no advertising, and no third-party SDK that phones home.
+The one Google library in the app, which handles tips through Google Play, carries usage logging of
+its own; without the `INTERNET` permission it has no way to send it.
 
 ## What the app can access, and why
 
@@ -38,6 +40,8 @@ There is no analytics, no crash reporting, no advertising, and no third-party SD
 - **The camera**, only when you tap to take a picture, through the system camera app. The app
   declares no camera permission.
 - **Notifications**, only if you turn reminders on.
+- **Google Play billing.** Lets the app ask the Google Play app for the price of a tip and open its
+  payment sheet. It gives the app nothing about you.
 
 ## The three things that happen outside the app
 
@@ -58,6 +62,12 @@ answer to "where could my data be":
 3. **Google Play.** Installing and updating an app is a transaction between your phone and Google,
    with its own privacy policy. The developer of this app receives aggregate, anonymous statistics —
    install counts, crash rates, country-level breakdowns — and no information about individuals.
+
+   **A tip, if you leave one, is paid to Google Play.** The app asks the Play app on your phone for
+   the prices and opens Play's own payment sheet; your payment details go to Google and never to the
+   app. Tips unlock nothing, so the app keeps no record of one. The developer receives the payment
+   and Google's order report, which identifies the order but not your payment details, and uses it
+   only for accounting.
 
 ## Children
 

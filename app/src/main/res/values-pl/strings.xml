@@ -23,6 +23,10 @@
     <string name="item_notes_label">Notatki</string>
     <string name="item_pick_image">Wybierz zdjęcie</string>
     <string name="items_empty">Nic tu jeszcze nie ma. Dotknij +, aby dodać pierwszą rzecz.</string>
+    <string name="items_tip_ask_title">Ta aplikacja jest darmowa i taka zostanie</string>
+    <string name="items_tip_ask_body">Jeśli ci się przydaje, możesz zostawić twórcy napiwek. Niczego nie odblokowuje, a aplikacja więcej o to nie zapyta.</string>
+    <string name="items_tip_ask_accept">Zostaw napiwek</string>
+    <string name="items_tip_ask_decline">Nie, dziękuję</string>
     <plurals name="items_count">
         <item quantity="one">%d rzecz</item>
         <item quantity="few">%d rzeczy</item>
@@ -69,6 +73,10 @@
     <string name="support_rate">Oceń tę aplikację w Google Play</string>
     <string name="support_rate_hint">Otwiera stronę aplikacji w Google Play. Ocena jest dobrowolna i niczego nie odblokowuje.</string>
     <string name="support_no_play">Na tym telefonie nie ma Google Play ani przeglądarki do otwarcia.</string>
+    <string name="support_tip">Napiwek dla twórcy</string>
+    <string name="support_tip_hint">Jednorazowy napiwek, płatny przez Google Play. Niczego nie odblokowuje, bo w tej aplikacji nic nie jest zablokowane.</string>
+    <string name="support_tip_thanks">Dziękuję. To wiele znaczy.</string>
+    <string name="support_tip_pending">Płatność jeszcze się rozlicza. Google Play ją dokończy.</string>
 
     <string name="backup_explainer">Wszystko zostaje na tym telefonie. Kopia zapasowa to pojedynczy plik, który przechowujesz, gdzie chcesz.</string>
     <string name="backup_export_records">Eksportuj dane</string>

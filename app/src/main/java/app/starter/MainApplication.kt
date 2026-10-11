@@ -2,6 +2,9 @@ package app.starter
 
 import android.app.Application
 import android.util.Log
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.work.Configuration
 import app.starter.data.APP_DATABASE_FILE
 import app.starter.data.APP_SCHEMA_VERSION
@@ -165,5 +168,25 @@ class MainApplication :
         applicationScope.launch {
             ensureSweepEnqueued(this@MainApplication)
         }
+        settleTipsOnEveryForeground()
+    }
+
+    /**
+     * Play refunds a purchase nobody acknowledged within three days, so a tip that cleared while the
+     * app was closed — or was paid just before a process death — is consumed the next time the user
+     * opens the app, whichever screen that is (ADR-0007). On *start*, not at process creation: a
+     * broadcast or the sweep starts the process too, and binding Play for those wakes it for nobody.
+     * Behind the gate, because the container holds the tip jar.
+     */
+    private fun settleTipsOnEveryForeground() {
+        // Kotlin note: an `object :` expression is an anonymous class instance — the listener object
+        // JS would pass inline. Added on the main thread, which `ProcessLifecycleOwner` requires.
+        ProcessLifecycleOwner.get().lifecycle.addObserver(
+            object : DefaultLifecycleObserver {
+                override fun onStart(owner: LifecycleOwner) {
+                    applicationScope.launch { container.tipJar.settlePending() }
+                }
+            },
+        )
     }
 }

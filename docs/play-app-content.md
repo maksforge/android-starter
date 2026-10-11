@@ -40,7 +40,12 @@ Read at **versionCode _, versionName _** by `publish-play.yml`'s verify step on 
 | `WAKE_LOCK` | WorkManager | the worker's own wake lock | none |
 | `ACCESS_NETWORK_STATE` | WorkManager | reads connectivity for job constraints; opens nothing | none, but a reviewer may ask why an app with no network reads it — this row is the answer |
 | `FOREGROUND_SERVICE` | WorkManager | its `SystemForegroundService`, never started by this app | none while nothing declares a foreground service *type* |
+| `com.android.vending.BILLING` | Play Billing Library | the tip (ADR-0007): IPC to the Play app's billing service | none: not on Play's declaration list. The listing shows *Contains in-app purchases* once products exist |
 | `…DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION` | AndroidX | its own non-exported receivers, signature-level | none: not user-visible |
+
+The billing library's `datatransport` dependency merges `INTERNET`; the manifest removes it with
+`tools:node="remove"`, and the gate is what proves it stayed out. It merges `ACCESS_NETWORK_STATE`
+too, which WorkManager already declares.
 
 **Forbidden, and asserted absent**: `INTERNET`, `AD_ID`, `QUERY_ALL_PACKAGES`,
 `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS`, `CAMERA`, `USE_EXACT_ALARM`. The first two are what the Data
@@ -75,6 +80,16 @@ question answered No gives Everyone (ESRB) and PEGI 3.
 The category is *All other app types* unless the app's purpose is something the questionnaire names.
 Not *Social or communication* for an app that only touches calls or messages: that category means
 people talking to each other through the app.
+
+Every content question **No**, and one **Yes**: *does the app allow users to purchase digital goods?*
+— the tip (ADR-0007). Its follow-up, *can these purchases include random items* (loot boxes), is
+**No**. The first two apps built from this template, both category *All other app types*, came out
+at PEGI 3, ESRB Everyone, USK 0 and 3+ elsewhere, with an *In-app purchases* notice — and **Brazil's
+ClassInd at 14+**, which it gives any app selling digital goods. Expect the same, and decide before
+submitting that a tip is worth it; deleting the tip is the only answer that keeps Brazil at L.
+
+In the Console the questionnaire shows one section at a time, and *Next* stays disabled until
+*Save* has been pressed. With managed publishing off, saving the summary sends it for review at once.
 
 Would change: user-generated content, communication between users, or a link out to anything that
 has either. A support `mailto:` hand-off is not user-to-user communication — it opens the user's own
@@ -123,6 +138,13 @@ The answer rests on one fact per route data could take:
    and sends it from their own mail client, or does not. ⚠ **Do not write "Play exempts support
    flows" in a re-declaration.** The help page has no such exemption; the claim is true because of
    what "collect" means, and that is the reason to give.
+5. **A tip is still "no data collected".** The payment is between the user and Google Play: Play's
+   own sheet takes the payment details, and the app never sees them. What the app receives is a
+   purchase token and a product id, which it hands straight back to Play to consume; it stores
+   neither and sends neither anywhere. The developer's order report comes from Google, not from the
+   app. Read the Console's help text on Play Billing at each re-declaration, and if it ever asks for
+   *Purchase history* to be declared, declare it as collected by Google Play and update the privacy
+   policy in the same commit.
 
 Would change any of it:
 
@@ -201,34 +223,27 @@ them:**
    name what came from your own use instead. Presenting your own work as tester-driven is an easy
    dishonest sentence, and the application does not need one.
 
-## A tip (Payments policy — not a question Play asks, but one a reviewer answers)
+## The tip (ADR-0007)
 
-**Default: no tip on any surface the release controls.** Not in the app, and not on the pages the
-listing links to. Read this before adding one, because the policy text and its enforcement disagree.
+**A Play Billing consumable, not a link.** The template ships it; an app that does not want it
+deletes it before the first upload (`optional-modules.md`).
 
-- **The text allows it.** Payments policy §3.2 treats a tip as a peer-to-peer payment, outside Play
-  Billing, when **100% reaches the creator** and **nothing unlocks** — no badge, no theme, no
-  thanks-screen. §4's anti-steering rule excepts §3. So: one personal payment link, worded as a *tip to
-  a person*, never a *donation to a project*.
-- **Enforcement has rejected apps anyway.** StreetComplete (February 2022) was rejected for in-app
-  Patreon, Liberapay and GitHub Sponsors links — and **for a link to its own home page, because that
-  page carried donation information**. A Buy Me a Coffee link in the app this template was extracted
-  from was flagged the same way. None of those is the §3.2 shape (tiers unlock things, a platform takes
-  a cut, a project is not a person), but the distinction has to survive a reviewer skimming for
-  "external payment link", and a pre-launch rejection costs the closed-test window.
-- **The reach is one level out.** The first app built from this template moved its tip from the app to
-  the repository and the Pages site, then noticed that the listing's *Website* field and the last line
-  of its full description point at exactly those pages. So "nothing the app links to" includes what
-  the **listing** links to.
-- **When to revisit:** once the app is live, with a track record to appeal from. The cheapest shape
-  then is a tip on the repository alone, with the listing's Website field and full description kept
-  off it. A Play Billing consumable is the unambiguous alternative, at the cost of a billing
-  dependency, Google's cut, and an *in-app purchases* badge on the listing.
+Why not the cheaper route, kept here because the question comes back: Payments policy §3.2 treats a
+peer-to-peer tip outside Play Billing as allowed when 100% reaches the creator and nothing unlocks,
+but enforcement has rejected apps anyway — StreetComplete (February 2022) for in-app Patreon,
+Liberapay and GitHub Sponsors links, **and for a link to its own home page because that page carried
+donation information**. "Nothing the app links to" therefore includes what the *listing* links to: the
+*Website* field and the full description. Region carve-outs (US external links since October 2025,
+the EEA's external-offers program) are fee programs with reporting obligations, not a route for
+occasional tips. A Play Billing purchase needs no exemption at all.
 
-Region carve-outs (US external links since October 2025, the EEA's external-offers program) do not
-help: both are fee programs with reporting obligations, which is not a serious route for occasional
-tips. A sentence promising a *future* tip, with nothing to click, is a statement about pricing and is
-fine anywhere.
+What a reviewer can still ask about, and the answer:
+
+- **The *Contains in-app purchases* label** on a free app: the tip unlocks nothing, and the Support
+  section says so in the user's language.
+- **The content rating**: re-answered above, with Brazil at 14+.
+- **Data safety**: point 5 above.
+- **Financial features**: unchanged. A tip is an in-app purchase, not a financial feature.
 
 ---
 

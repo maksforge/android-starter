@@ -467,6 +467,41 @@ else's mileage. Ruby is confined to this workflow; the internal-track one never 
 ⚠️ **Changelog files are named by `versionCode`, not semver** — `409.txt`, not `1.9.0.txt`. supply
 keys notes to the build, and a name Play cannot match is ignored in silence rather than rejected.
 
+## Selling the tip (ADR-0007)
+
+The code ships with the template; the products are Console work, and the order is fixed by Play.
+
+**Once per developer account**, not per app — skip it if another app on the account already sells
+something:
+
+1. *Settings → Payments profile*: a merchant profile with a verified bank account under *How you get
+   paid*. Without one, purchases work and payouts are held. Payouts are monthly, from a threshold of
+   about 2 PLN.
+2. The short statement name buyers see on their card statement.
+3. Enrol in the **15% service fee** tier.
+4. *Settings → License testing*: a list with your own personal Google account, ticked for every app.
+   A licence tester's purchases use Play's test card and move no money.
+
+**Per app:**
+
+1. **Upload a build with the tip to internal testing first.** Console refuses to create a one-time
+   product until a bundle carrying `com.android.vending.BILLING` is on a track. That build shows no
+   tip, because Play has no products to return — the intended fallback.
+2. *Monetise with Play → Products → One-time products*: create `tip_small`, `tip_medium`, `tip_large`
+   and `tip_xlarge`, each with a purchase option (id `tip`), **multi-quantity on**, and activate them.
+   An id that differs from `TIP_PRODUCT_IDS` is silently left out of the app.
+3. **Prices: set Poland by hand.** Bulk pricing treats the amount you type as excluding VAT, so 5 PLN
+   comes out as 6.19 in Poland. Set the base price, let Play convert the rest, then override Poland to
+   exactly 5.00 / 10.00 / 20.00 / 50.00.
+4. **One real purchase on the phone, as a licence tester**, from the internal-testing install: the
+   Support section shows Play's prices, Play's sheet opens, and *Thank you. It means a lot.* appears.
+   That line is only shown after a successful consume, so it is the proof the consume works. Play
+   refuses adb-injected taps on its own Buy and Update buttons — a person taps those.
+5. **Re-submit the content rating** with *digital purchases* Yes, before the build reaches production
+   (`play-app-content.md` — expect Brazil at 14+).
+6. After production: one real tip from an account that is **not** a licence tester, seen in *Order
+   management*, refunded if you like. Until then the payout path has never actually run.
+
 ## Setting up a new repository (once)
 
 **None of this is inherited.** GitHub's template mechanism copies files and nothing else: no

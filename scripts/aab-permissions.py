@@ -95,6 +95,10 @@ EXPECTED = {
     "android.permission.WAKE_LOCK": "WorkManager",
     "android.permission.ACCESS_NETWORK_STATE": "WorkManager — reads connectivity state, opens nothing",
     "android.permission.FOREGROUND_SERVICE": "WorkManager — its SystemForegroundService, never started here",
+    # The tip (ADR-0007), merged from the Play Billing Library. It lets the app talk to
+    # the Play Store app's billing service; no dialog, and no data of the user's. Its
+    # datatransport dependency also merges INTERNET, which the manifest removes.
+    "com.android.vending.BILLING": "the Play Billing Library — the tip, ADR-0007",
     # AndroidX defines and uses this itself, signature-level. The prefix is the
     # applicationId, which differs between the debug and release builds, so it is
     # matched by suffix rather than spelled out.

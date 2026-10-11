@@ -129,10 +129,28 @@ the reminders are gone.
   *Restore defaults* promises to reset something that is gone.
 - ADR-0003 gets its amendment.
 
+### The tip (Play Billing)
+
+- `tip/`, `test/…/tip/`, `ui/support/SupportViewModel.kt` and the tip section in `SupportScreen.kt`
+- The one-time ask: `TipAskCard` and the `onOpenSupport` route in `ui/items/`, `showTipAsk` and
+  `answerTipAsk` in `ItemsViewModel`, and `AppPreferences.tipAsked` / `markTipAsked`
+- `AppContainer.tipJar` and `installedAt`; `settleTipsOnEveryForeground` in `MainApplication`
+- The `items_tip_ask_*` and `support_tip*` strings, in every language
+- Gradle: `billing.ktx`, `androidx.lifecycle.process`, and licensee's `allowUrl` for Google's terms
+- Manifest: the `INTERNET` `tools:node="remove"` — harmless once billing is gone, but it then
+  removes nothing and reads as a reason that no longer exists
+- `scripts/aab-permissions.py`: the `BILLING` row in EXPECTED
+- `play-app-content.md`'s *Content rating* back to all No, Data safety point 5 and *The tip*;
+  the privacy policy's billing bullet and tip paragraph; `RELEASING.md`'s *Selling the tip*; the
+  tip section of `DOD.md`
+- ADR-0007 gets its amendment.
+
 ### The placeholder domain
 
 - `ui/items/`, the items routes in `Navigation.kt` / `NavigationKeys.kt`, and the `tab_items`,
   `item_*`, `items_*`, `action_save`, `action_edit` and `action_delete` strings
+- ⚠ **The tip's one ask lives on the items screen** and counts items as its measure of use. Move
+  `TipAskCard` to your home screen and give `tipAskDue` your own measure, or the ask goes with it
 - `debug/…/data/SampleData.kt`, `debug/…/debug/SeedReceiver.kt`, the debug manifest's receiver, and
   the seed rows in `DebugSettings.kt` with their `debug_seed` and `debug_wipe` strings — or keep the
   seeding seam and point it at your own data
