@@ -14,7 +14,7 @@ What it changes, and nothing else:
   * `README.md`              — replaced by a short one for the app; the template's describes the template
   * `LICENSE`                — replaced by an all-rights-reserved notice until you choose a licence
   * `release-please-config.json`, `.release-please-manifest.json`, `CHANGELOG.md`
-  * `docs/_config.yml`       — the Pages site title
+  * `docs/_config.yml`       — the Pages site title, its icon path, and the in-development status
   * `fastlane/Appfile`, the three publish workflows — the Play package name
   * `app/schemas/`           — the exported schema moves with the database class
   * `.claude/settings.json`  — the Claude Code push hook (created; the template has none, see PUSH_HOOK)
@@ -312,7 +312,14 @@ def main() -> int:
     (ROOT / ".release-please-manifest.json").write_text('{\n  ".": "0.1.0"\n}\n')
     (ROOT / "CHANGELOG.md").write_text(f"# Changelog\n\nNothing released yet.\n")
 
-    rewrite(ROOT / "docs/_config.yml", [("title: Starter", f"title: {args.name}")])
+    rewrite(
+        ROOT / "docs/_config.yml",
+        [
+            ("title: Starter", f"title: {args.name}"),
+            ("icon: /assets/icons/android-starter.webp", f"icon: /assets/icons/{ROOT.name}.webp"),
+            ("status: oss", "status: building"),
+        ],
+    )
 
     # --- The two files that describe the *template* ------------------------------------------------
     # Both were rewritten by hand in the first bootstrapped app's first hour, and the LICENSE is the one that
@@ -382,6 +389,8 @@ def main() -> int:
         "  docs/optional-modules.md  - delete what the app does not need while deleting is free\n"
         "  scripts/aab-permissions.py - EXPECTED lists the template's permissions; keep it true\n"
         "  scripts/edge-to-edge.py    - SCENES walks the template's screens; rewrite it against yours\n"
+        f"  maksforge/maksforge.github.io - put the icon at assets/icons/{ROOT.name}.webp and add the app\n"
+        "  to the home page; docs/_config.yml's description is still a placeholder\n"
         "  LICENSE, README.md, CLAUDE.md's placeholders"
     )
     return 0

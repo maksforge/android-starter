@@ -57,6 +57,9 @@ close. Whenever `APP_SCHEMA_VERSION` changes, all five hold before the release g
       field, and a sideloaded APK keeps mailing whatever string was compiled in for as long as that
       build survives. A dedicated account, not an alias on your personal mail.
 - [ ] **Write the listing.** `docs/store-listing.md` — every heading in it is parsed by a script.
+- [ ] **Put the app on maksforge.com.** Its icon goes at `assets/icons/<repo>.webp` in
+      maksforge/maksforge.github.io, which the app's own site loads, and the app goes on that home
+      page. Replace `description` in `docs/_config.yml` too: it is the tagline under the app's name.
 - [ ] **Write the privacy policy** and confirm GitHub Pages is serving `docs/`. Play requires a
       *hosted* URL, and an offline app has no server of its own.
 - [ ] **Answer the Console's App content pages and write [`play-app-content.md`](play-app-content.md)
