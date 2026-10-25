@@ -106,7 +106,7 @@ account.">
 
 ## Status
 
-Just bootstrapped from [android-starter](https://github.com/srednimax/android-starter). The release
+Just bootstrapped from [android-starter](https://github.com/maksforge/android-starter). The release
 pipeline and quality gates are real; the screens are still the template's placeholder app. Nothing
 is on Play yet.
 
