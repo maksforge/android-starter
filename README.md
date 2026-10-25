@@ -11,7 +11,7 @@ the part that takes weeks to get right and looks like nothing on a screenshot.
 ## Start
 
 ```bash
-gh repo create my-app --template srednimax/android-starter --private --clone
+gh repo create my-app --template maksforge/android-starter --private --clone
 cd my-app
 python3 bootstrap.py --name "My App" --namespace app.myapp --appid io.github.<you>.myapp
 git config core.hooksPath .githooks     # Conventional Commits — release-please depends on it
