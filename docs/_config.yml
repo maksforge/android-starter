@@ -11,6 +11,11 @@
 # documents were safe to leave in a published directory. That reason was untrue. They are safe, but only
 # because this repo is public and they hold nothing that is not already on GitHub; anything that must not
 # be published must not be in docs/ at all.
-theme: jekyll-theme-minimal
+remote_theme: maksforge/pages-theme
+plugins:
+  - jekyll-remote-theme
 title: Starter
 description: <One line about the app>
+maksforge:
+  icon: /assets/icons/android-starter.webp
+  status: oss
