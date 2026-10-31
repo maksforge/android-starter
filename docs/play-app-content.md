@@ -61,13 +61,20 @@ arriving through a dependency.
 
 ## App access
 
-**All functionality is available without special access.** Answered _<date>_.
+**All functionality is available without special access.** Answered _<date>_. The Console now calls
+this page *Sign-in details*.
 
 There is no account and no sign-in. Would change: a feature behind a login.
 
 ## Content rating
 
-**The IARC questionnaire.** Answered _<date>_, category _<category>_, rating contact _<email>_.
+**The IARC questionnaire.** Answered _<date>_, category _<category>_, rating contact
+`<support email>` — the listing's address, so there is one address to keep alive, not two. Every
+question answered No gives Everyone (ESRB) and PEGI 3.
+
+The category is *All other app types* unless the app's purpose is something the questionnaire names.
+Not *Social or communication* for an app that only touches calls or messages: that category means
+people talking to each other through the app.
 
 Would change: user-generated content, communication between users, or a link out to anything that
 has either. A support `mailto:` hand-off is not user-to-user communication — it opens the user's own
@@ -135,12 +142,18 @@ forbids it. Answered _<date>_.
 type, the `PROPERTY_SPECIAL_USE_FGS_SUBTYPE` text if it is `specialUse`, and the three answers the
 declaration asks for: what the user sees, why it cannot wait, and why no named type fits.
 
+The declaration also wants **a video** of the service doing its job. Record its link here, and keep
+it viewable by anyone with the link for as long as the declaration is on file. `adb screenrecord`
+captures no audio, so say so in the declaration if the service's job is a sound.
+
 ## Store settings (not App content, recorded here because it is asked for the same reason)
 
 - **Category:** _<category>_, and why not the obvious neighbour.
 - **Tags:** _<tags>_.
-- **Contact email:** _<address>_, public on the listing.
-- **Privacy policy:** `https://<owner>.github.io/<repo>/privacy-policy.html`, served from `docs/` by
+- **Contact email:** `<support email>`, public on the listing and the same address
+  `SupportHandoff.kt` compiles in. The Console field changes without a release; the app's copy needs
+  one.
+- **Privacy policy:** `https://maksforge.com/<repo>/privacy-policy.html`, served from `docs/` by
   Pages. It updates on a merge to `main`, with no release, which is why it has to be right before the
   app it describes ships rather than after.
 
@@ -149,6 +162,11 @@ declaration asks for: what the user sees, why it cannot wait, and why no named t
 **Submitted _<date>_.** Asked once, from the Console's Dashboard, after the closed test's 14 days.
 Record the answers **verbatim**, not summarised: the Console asks the same set again for the next app
 on this account, and an answer re-read a year later has to be the one that was given.
+
+**Draft the answers here before pasting them**, under a *Drafted <date>, not submitted* line that
+becomes the submission date once they are in. Every claim must trace to a dated record in
+[`DOD.md`](DOD.md) or a phase file: a test you remember but never wrote down is cut, not paraphrased.
+Leave `_<…>_` gaps only for the testers' own words, which only the owner has.
 
 **About your closed test**
 
@@ -161,20 +179,23 @@ on this account, and an answer re-read a year later has to be the one that was g
 
 - *Who is the intended audience?* — _<answer>_
 - *Describe how your app provides value to users* — _<answer>_
-- *How many installs do you expect in your first year?* — _<answer>_
+- *How many installs do you expect in your first year?* — _<answer>_ (the apps built from this
+  template answered 0–1,000)
 
 **Your production readiness**
 
 - *What changes did you make based on what you learned during your closed test?* — _<answer>_
 - *How did you decide that your app is ready for production?* — _<answer>_
 
-**Three things the first app built from this template kept deliberate, so a later answer does not undo
+**Three things the apps built from this template kept deliberate, so a later answer does not undo
 them:**
 
 1. **The audience answer agrees with *Target audience* above.** A reviewer reads the two side by side.
    A mismatch is a question rather than a rejection, but it can cost days.
 2. **Engagement is answered from what the app can know.** With no `INTERNET` permission there is no
-   telemetry, so *"I do not know how many used X"* is the true answer. A guessed figure would
+   telemetry, so the true answer is what is visible without it: *"The app has no internet permission
+   and no analytics, so I cannot see how often testers used it. What I can see is the testers who
+   stayed opted in through the 14 days, and the messages some of them sent."* A guessed figure would
    contradict *Data safety* in this same file.
 3. **The changes answer says where the changes came from.** If the testers reported nothing, say so and
    name what came from your own use instead. Presenting your own work as tester-driven is an easy

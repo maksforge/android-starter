@@ -36,7 +36,8 @@ close. Whenever `APP_SCHEMA_VERSION` changes, all five hold before the release g
 - [ ] **Decide `minSdk` deliberately, before launch.** The direction is asymmetric: raising it later
       strands existing installs on the last build that fitted them, lowering it later is free. If the
       only phone in the loop sits at the top of the range, every `SDK_INT` branch below it ships
-      unvalidated — the first app built from this template raised 26 to 33 for exactly that reason. Move CI's floor legs with it.
+      unvalidated — the first app built from this template raised 26 to 33 for exactly that reason. Move CI's floor legs with it,
+      and write the reason beside `minSdk` in `app/build.gradle.kts`, where the next person to touch it reads it.
 - [ ] **Replace the placeholder mark.** `art/mark.py`, then `python3 art/make-launcher-icon.py` and
       `make-feature-graphic.py`. Commit the concept image and record its provenance in
       `art/README.md` — where the art came from is the thing most likely to block a first upload, and
@@ -51,12 +52,17 @@ close. Whenever `APP_SCHEMA_VERSION` changes, all five hold before the release g
       workflow, after the tag, with the version already spent.
 - [ ] **Choose the palette.** Four seeds in `scripts/gen_scheme.py`, regenerate `theme/Color.kt`,
       read the contrast report it prints on stderr.
-- [ ] **Put a real support address in `ui/support/SupportHandoff.kt`.** It ships as
-      `support@example.com`, `bootstrap.py` cannot guess it, and a release carrying it is a release
-      with no way for anyone to reach you — Play's listing wants the same address in its contact
-      field, and a sideloaded APK keeps mailing whatever string was compiled in for as long as that
-      build survives. A dedicated account, not an alias on your personal mail.
+- [ ] **Make the support address work both ways.** `bootstrap.py` compiled in
+      `<repo>.support@maksforge.com` (or `--support`) and wrote it into the site, the privacy policy
+      and the Play docs. Mail to it arrives through the domain's catch-all; replying from it needs the
+      receiving Gmail's *Send mail as* entry, confirmed. Send *Report a problem* from a non-Gmail
+      account and check it lands outside Spam. One address everywhere — the listing's contact field
+      and IARC's rating contact too — because a sideloaded build mails what it was compiled with for
+      as long as it survives: an address on our own domain can move mailboxes without a release, and
+      the domain must stay registered for as long as any build does.
 - [ ] **Write the listing.** `docs/store-listing.md` — every heading in it is parsed by a script.
+- [ ] **Capture the screenshots** with `scripts/screenshots.py` from a release-shaped build, in every
+      listing language, into `art/play-screenshots/`. Play wants at least two before the first review.
 - [ ] **Put the app on maksforge.com.** Its icon goes at `assets/icons/<repo>.webp` in
       maksforge/maksforge.github.io, which the app's own site loads, and the app goes on that home
       page. Replace `description` in `docs/_config.yml` too: it is the tagline under the app's name.
@@ -65,8 +71,9 @@ close. Whenever `APP_SCHEMA_VERSION` changes, all five hold before the release g
 - [ ] **Answer the Console's App content pages and write [`play-app-content.md`](play-app-content.md)
       in the same sitting** — the reasons are in front of you then and gone a week later. It moves in
       the same commit as the privacy policy, every time.
-- [ ] **`LICENSE` and `README.md`.** Bootstrap wrote an all-rights-reserved notice that grants
-      nothing; choose the licence you mean, and make the README's *Contributing* agree with it.
+- [ ] **`LICENSE` and `README.md`.** Bootstrap wrote a source-available notice and a *Contributing*
+      that refuses pull requests — what the apps built from this template chose. Keep both or replace
+      both; they must agree.
 - [ ] **Create the upload keystore, outside the repo**, and put its four values in
       `local.properties`. Back it up somewhere that is not this machine: losing it means never being
       able to update the app on Play again. Fill in *The upload key* table in `RELEASING.md` the same
@@ -75,16 +82,24 @@ close. Whenever `APP_SCHEMA_VERSION` changes, all five hold before the release g
       merge setting and Pages; the release-please PAT is the one step it cannot do, and without it
       no release PR is ever opened. *Setting up a new repository* in [`RELEASING.md`](RELEASING.md).
       **None of this is inherited from the template** — GitHub copies files, never settings — and
-      the build stays green while it is all still undone.
+      the build stays green while it is all still undone. **Write the PAT's expiry date into this
+      item** the day you create it: when it lapses the release PR simply stops appearing.
 - [ ] **Set the five Play secrets and create the service account** (`docs/RELEASING.md`) — the
       service account is the one step CI cannot do for itself. No account permissions; two app
       permissions, on this app only; no expiry date.
 - [ ] **Plan the closed test.** A new personal developer account reaches production only after a
       closed test — at the time of writing 12 testers opted in for 14 continuous days, then an access
       application. Recruit the testers before the build is ready, not after; `publish-play-closed.yml`
-      moves each build to them.
+      moves each build to them. A tester-swap community, where developers test each other's closed
+      tests, filled the apps built from this template within days.
 - [ ] **Decide the `applicationId` deliberately.** It is fixed the moment the Play entry is created —
       not renameable, not transferable without losing every install and review.
+
+## Before the next upload
+
+Re-declarations a change owes Play, written down the day the change merges and ticked when the
+Console matches. A new permission, foreground service or data type is a Console change that waits in
+*Publishing overview* for *Send for review* with the upload that needs it. Empty most of the time.
 
 ## After the closed test
 
@@ -105,6 +120,8 @@ close. Whenever `APP_SCHEMA_VERSION` changes, all five hold before the release g
       `aab-permissions.py` is the one that finds what a *dependency* merged into your manifest —
       a permission you never declared, or a `uses-feature` that quietly filters the app off devices.
 - [ ] **Every release: read the release notes gate's output** rather than trusting it passed.
+- [ ] **Every Play declaration: confirm Data safety still holds** against
+      [`play-app-content.md`](play-app-content.md), and write the date of the re-read here.
 - [ ] **Every dependency bump: re-run `licensee`.** The build fails on an unallowed licence, which is
       the point — but the fix is two things, the allowlist *and* the bundled text.
 - [ ] **Test the release-shaped build on a device.** A missing R8 keep rule does not crash; it makes
