@@ -214,9 +214,12 @@ jobs:
   #
   # **The prize is API 26-28, not parallelism.** The phone is the only physical device and it is
   # modern, so every claim about how the app draws under the system bars below API 29 was argued
-  # from theme XML and never observed. An emulator observes it. The levels are the floor and the
-  # target, as in `instrumented`; if `minSdk` rises past 29 the prize becomes the configuration grid
-  # instead — navigation mode varies by device and by user setting, not by platform release.
+  # from theme XML and never observed. An emulator observes it. The levels are the floor, the
+  # target, and API 32 between them: the only level that is neither "not forced edge-to-edge" (26)
+  # nor "forced" (36), and the only one whose bars are read through the `ITYPE_*` names. 32 rather
+  # than 33 because the API 33 emulator dies under this script on a phone profile (exit 139,
+  # `Failed to find ColorBuffer`, a host graphics fault). If `minSdk` rises past 29 the prize
+  # becomes the configuration grid instead — navigation mode varies by device and by user setting.
   #
   # **An app that locks its activity to portrait drops the two landscape configs here**, in the
   # same commit as the lock: every scene starts from that activity, so a landscape cell would
@@ -254,20 +257,8 @@ jobs:
       # these cells are now siblings rather than steps inside one job.
       fail-fast: false
       matrix:
-        api-level: [26, 36]
+        api-level: [26, 32, 36]
         config: [portrait-gesture, portrait-threebutton, landscape-gesture, landscape-threebutton]
-        include:
-          # ⚠ **The floor takes a full `default` image, never `aosp_atd`, at any level.** ATD strips
-          # SystemUI pieces to run faster and how much it strips varies by level: the API 34 ATD
-          # image once shipped no `com.android.internal.systemui.navbar.*` overlays and no readable
-          # `secure navigation_mode`, so every cell on it was a configuration nothing could confirm
-          # the device was in — four red jobs saying exactly that. API 36's ATD has the overlays and
-          # runs all four cells, which is why the target keeps it. If the floor rises, keep
-          # `default` there rather than betting the new level's ATD is the 36 kind.
-          - api-level: 26
-            target: default
-          - api-level: 36
-            target: aosp_atd
         exclude:
           # API 26-28 has no gesture navigation at all. `usable_configs` knows that and would skip
           # the cell green, but only after booting an emulator to be told a platform fact — so the
@@ -300,8 +291,16 @@ jobs:
         uses: ReactiveCircus/android-emulator-runner@v2.38.0
         with:
           api-level: ${{ matrix.api-level }}
-          target: ${{ matrix.target }}
+          # ⚠ **`default` at every level, never `aosp_atd`.** ATD strips SystemUI to run faster: the
+          # API 34 image had no navbar overlays to set a mode with, and the API 36 one draws no
+          # system bars at all — an app built from this template had its API 36 cells read
+          # `insets={}` and report clean every night for eight weeks, having checked nothing.
+          target: default
           arch: x86_64
+          # **A phone's profile, not the runner's default device.** With none, the AVD is a bare
+          # 320x640 device with hardware keys and so no navigation bar, and every cell reads the
+          # status bar alone — the bottom edge, the one edge-to-edge is about, is never checked.
+          profile: pixel_6
           # Animation scale changes transitions, not final layout, and every scene is captured
           # after a `settle()` — so this costs the evidence nothing and removes a whole class of
           # mid-transition screenshot from the flakiest part of this job.
