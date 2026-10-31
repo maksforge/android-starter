@@ -431,7 +431,7 @@ promotion: it moves the release already sitting on `from_track` instead of looki
 | `from_track` | `internal` | source track holding the build being promoted |
 | `rollout` | `0.1` | fraction of users; `1.0` is everyone |
 | `version_code` | *(blank)* | which build to promote; blank asks Play what is on `from_track` |
-| `update_listing` | `false` | push descriptions + screenshots as well |
+| `update_listing` | `false` | push descriptions, screenshots + feature graphics as well |
 | `dry_run` | `true` | validate against Play, commit nothing |
 
 **The versionCode comes from Play, not from git.** Every other workflow derives it from the commit
@@ -447,10 +447,10 @@ report it. Resume it in the Console first.
 
 ### One edit, one review
 
-The bundle, the release notes and — when `update_listing` is on — the descriptions and screenshots
-all go up in a **single** `supply` invocation, which is a single Play edit. Play reviews an *edit*,
-not a field, so that is **one** review cycle. Uploading the build now and fixing the listing after is
-two edits, two reviews and two waits.
+The bundle, the release notes and — when `update_listing` is on — the descriptions, screenshots and
+feature graphics all go up in a **single** `supply` invocation, which is a single Play edit. Play
+reviews an *edit*, not a field, so that is **one** review cycle. Uploading the build now and fixing
+the listing after is two edits, two reviews and two waits.
 
 Release notes always accompany the build; they are scoped to a version and mean nothing without it.
 `update_listing` governs only the descriptions, screenshots and graphics.

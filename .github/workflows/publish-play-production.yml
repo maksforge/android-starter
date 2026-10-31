@@ -54,7 +54,7 @@ on:
         type: string
         required: false
       update_listing:
-        description: 'Push descriptions + screenshots too — ONLY if store-listing.md changed'
+        description: 'Push descriptions, screenshots + feature graphics too — ONLY if store-listing.md or the art changed'
         type: boolean
         default: false
       dry_run:
