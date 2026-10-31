@@ -3,7 +3,9 @@ package app.starter
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.automirrored.outlined.List
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation3.runtime.NavKey
 import kotlinx.serialization.Serializable
@@ -69,8 +71,9 @@ data class LicenceText(
 enum class TopLevelDestination(
     val key: NavKey,
     @param:StringRes val label: Int,
+    val selectedIcon: ImageVector,
     val icon: ImageVector,
 ) {
-    ItemsTab(Items, R.string.tab_items, Icons.AutoMirrored.Filled.List),
-    SettingsTab(Settings, R.string.tab_settings, Icons.Filled.Settings),
+    ItemsTab(Items, R.string.tab_items, Icons.AutoMirrored.Filled.List, Icons.AutoMirrored.Outlined.List),
+    SettingsTab(Settings, R.string.tab_settings, Icons.Filled.Settings, Icons.Outlined.Settings),
 }
