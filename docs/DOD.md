@@ -59,6 +59,7 @@ close. Whenever `APP_SCHEMA_VERSION` changes, all five hold before the release g
       account and check it lands outside Spam. One address everywhere — the listing's contact field
       and IARC's rating contact too; `SupportHandoff.kt` says why it lives on our own domain.
 - [ ] **Write the listing.** `docs/store-listing.md` — every heading in it is parsed by a script.
+      The Console's *Review* step then asks for the AI-generated assets declaration: the owner's to make.
 - [ ] **Capture the screenshots** with `scripts/screenshots.py` from a release-shaped build, in every
       listing language, into `art/play-screenshots/`. Play wants at least two before the first review.
 - [ ] **Put the app on maksforge.com.** Its icon goes at `assets/icons/<repo>.webp` in
@@ -68,7 +69,8 @@ close. Whenever `APP_SCHEMA_VERSION` changes, all five hold before the release g
       *hosted* URL, and an offline app has no server of its own.
 - [ ] **Answer the Console's App content pages and write [`play-app-content.md`](play-app-content.md)
       in the same sitting** — the reasons are in front of you then and gone a week later. It moves in
-      the same commit as the privacy policy, every time.
+      the same commit as the privacy policy, every time. Re-read *Target audience* after the content
+      rating is submitted.
 - [ ] **`LICENSE` and `README.md`.** Bootstrap wrote a source-available notice and a *Contributing*
       that refuses pull requests, or with `--licence reserved` a notice that grants nothing and a
       placeholder. Keep both or replace both; they must agree.
@@ -89,9 +91,13 @@ close. Whenever `APP_SCHEMA_VERSION` changes, all five hold before the release g
       closed test — at the time of writing 12 testers opted in for 14 continuous days, then an access
       application. Recruit the testers before the build is ready, not after; `publish-play-closed.yml`
       moves each build to them. A tester-swap community, where developers test each other's closed
-      tests, filled the apps built from this template within days.
+      tests, filled the apps built from this template within days. Testers: internal is the email
+      list `only-me-Tester`, every closed test the group `testers-community@googlegroups.com` —
+      never a per-app group or list. **The first closed release of a never-published app is made in
+      the Console**; the workflow takes over after its approval ([`RELEASING.md`](RELEASING.md)).
 - [ ] **Decide the `applicationId` deliberately.** It is fixed the moment the Play entry is created —
-      not renameable, not transferable without losing every install and review.
+      not renameable, not transferable without losing every install and review. A new MaksForge app
+      is `com.maksforge.<app>`.
 
 ## The tip — open until a real purchase is consumed
 

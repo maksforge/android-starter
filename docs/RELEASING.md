@@ -319,6 +319,9 @@ update". Promoting to closed testing is what `publish-play-closed.yml` below is 
 production has its own workflow after it. Both are manual: neither happens without you clicking
 *Run workflow*.
 
+**Internal testers are the Play Console email list `only-me-Tester`, which holds the owner alone**
+(owner's rule, 2026-10-31). Never a per-app list.
+
 ## Reaching closed testing (manual, promotes)
 
 `.github/workflows/publish-play-closed.yml` — **Run workflow**, never automatic, for the same reason
@@ -329,6 +332,9 @@ the production workflow, never runs `bundleRelease` and never materialises the u
 ⚠ **A new personal developer account cannot reach production without a closed test first**: at the
 time of writing, at least 12 testers opted in for 14 continuous days, then an access application in
 the Console. The window is measured on testers being opted in, which is what shapes this workflow.
+
+**Every closed test's testers are the Google Group `testers-community@googlegroups.com`** (owner's
+rule, 2026-10-31) — never a per-app group or email list.
 
 | Input | Default | What it does |
 | --- | --- | --- |
@@ -374,6 +380,13 @@ name the version in the dialog.
 ⚠ **The first release on a closed track waits on Play review.** A green run means the promotion was
 accepted, not that any tester has the build. Later releases on a reviewed track appear within minutes.
 
+⚠ **On an app never published (a *draft* app), the first closed release is made in the Console.**
+The workflow fails with `Google Api Error: Invalid request - Only releases with status draft may be
+created on draft app.` until the app has been published once. *Closed testing* → the track → *Create
+new release* → *Add from library* (the build already on internal) → release notes
+(`play-whatsnew.py` prints them) → *Save* → *Publishing overview* → *Send changes for review*. After
+that first approval the workflow works.
+
 ⚠ **A green closed promotion says nothing about the listing.** It skips the listing by construction,
 and every *dry* listing run is validated and discarded. Nor does the listing wait for production: it
 belongs to the app rather than to a track, so the first `publish-play-production.yml` run with
@@ -382,6 +395,10 @@ shows. Re-promoting a build a track already holds is accepted, so a listing-only
 workflow re-promoting what the track already has. And before production access is granted, a dry run
 `internal → production` fails with `Precondition check failed.` rather than a 403: that is the
 production track not being open to the account yet, and says nothing about the service account.
+
+⚠ **The listing's *Review* step asks whether its images and videos are AI-generated.** That answer
+is the owner's statement, not a fact the repo holds, so any automation filling the listing in the
+Console stops there and hands it over.
 
 ## Going to production (manual, gated, staged)
 
