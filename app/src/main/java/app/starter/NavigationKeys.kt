@@ -2,9 +2,9 @@ package app.starter
 
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.List
-import androidx.compose.material.icons.automirrored.outlined.List
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation3.runtime.NavKey
@@ -74,6 +74,6 @@ enum class TopLevelDestination(
     val selectedIcon: ImageVector,
     val icon: ImageVector,
 ) {
-    ItemsTab(Items, R.string.tab_items, Icons.AutoMirrored.Filled.List, Icons.AutoMirrored.Outlined.List),
+    ItemsTab(Items, R.string.tab_items, Icons.Filled.Home, Icons.Outlined.Home),
     SettingsTab(Settings, R.string.tab_settings, Icons.Filled.Settings, Icons.Outlined.Settings),
 }
