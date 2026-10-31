@@ -60,13 +60,16 @@ answer to "where could my data be":
    the phone closed the app meanwhile, when you next share a backup). The one
    you picked keeps it until you next share a backup or restart the phone.
 3. **Google Play.** Installing and updating an app is a transaction between your phone and Google,
-   with its own privacy policy. The developer of this app receives aggregate, anonymous statistics —
-   install counts, crash rates, country-level breakdowns — and no information about individuals.
+   with its own privacy policy. About installs, the developer of this app receives aggregate,
+   anonymous statistics — install counts, crash rates, country-level breakdowns — and no information
+   about individuals.
 
    **A tip, if you leave one, is paid to Google Play.** The app asks the Play app on your phone for
    the prices and opens Play's own payment sheet; your payment details go to Google and never to the
    app. Tips unlock nothing, so the app keeps no record of one. The developer receives the payment
-   and Google's order report, which identifies the order but not your payment details, and uses it
+   and Google's order reports, which show for each tip the product, the price, your country, state
+   and postcode, and the model of your phone — and your city, in the few countries where the developer
+   rather than Google is the seller — but not your name or payment details. The developer uses them
    only for accounting.
 
 ## Children
