@@ -1,9 +1,7 @@
 package app.starter.ui.backup
 
 import android.app.Application
-import android.content.Intent
 import android.net.Uri
-import androidx.core.content.FileProvider
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
@@ -31,7 +29,7 @@ data class BackupUiState(
     /** A message to show once and clear — an export's result, a restore's refusal. */
     val message: String? = null,
     /** Set when an export is ready to hand to the share sheet. */
-    val share: Intent? = null,
+    val share: File? = null,
 )
 
 class BackupViewModel(
@@ -57,7 +55,7 @@ class BackupViewModel(
             val result = runCatching { exporter.exportTo(target, scope, now) }
             _state.update { current ->
                 result.fold(
-                    onSuccess = { file -> current.copy(busy = false, share = shareIntentFor(file)) },
+                    onSuccess = { file -> current.copy(busy = false, share = file) },
                     onFailure = { error -> current.copy(busy = false, message = error.message) },
                 )
             }
@@ -99,20 +97,6 @@ class BackupViewModel(
     fun consumeMessage() = _state.update { it.copy(message = null) }
 
     fun consumeShare() = _state.update { it.copy(share = null) }
-
-    /**
-     * A `content://` Uri through the app's FileProvider, never a `file://` one — passing a file Uri
-     * across apps has been illegal since Android 7 and throws `FileUriExposedException`.
-     */
-    private fun shareIntentFor(file: File): Intent {
-        val uri =
-            FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
-        return Intent(Intent.ACTION_SEND).apply {
-            type = "application/zip"
-            putExtra(Intent.EXTRA_STREAM, uri)
-            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-        }
-    }
 
     companion object {
         val Factory: ViewModelProvider.Factory =

@@ -1,6 +1,5 @@
 package app.starter.ui.backup
 
-import android.content.Intent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
@@ -24,6 +23,7 @@ import app.starter.data.backup.BackupScope
 import app.starter.theme.Spacing
 import app.starter.ui.appViewModelExtras
 import app.starter.ui.common.DetailScaffold
+import app.starter.ui.common.shareFiles
 
 @Composable
 fun BackupScreen(
@@ -43,8 +43,8 @@ fun BackupScreen(
         }
 
     LaunchedEffect(state.share) {
-        state.share?.let { intent ->
-            context.startActivity(Intent.createChooser(intent, null))
+        state.share?.let { archive ->
+            context.shareFiles(listOf(archive), "application/zip")
             viewModel.consumeShare()
         }
     }
