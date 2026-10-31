@@ -1076,6 +1076,74 @@ def swipe_to_end() -> None:
         previous = current
 
 
+def scroller_of(nodes: list[Node], node: Node) -> Rect:
+    """The smallest scrolling container around `node` — the viewport its rows move through."""
+    around = [
+        other.bounds
+        for other in nodes
+        if other.package == PACKAGE
+        and "ScrollView" in other.cls
+        and other.bounds.top <= node.bounds.top
+        and node.bounds.bottom <= other.bounds.bottom
+    ]
+    if not around:
+        raise StepFailed(f"{node.label!r} is not inside anything that scrolls")
+    return min(around, key=lambda rect: rect.area)
+
+
+def touch_slop_px() -> int:
+    """Android's 8dp touch slop in pixels: the distance a finger travels before a list starts to move."""
+    match = re.findall(r"density: (\d+)", shell("wm density"))
+    return round(8 * int(match[-1]) / 160) if match else 24
+
+
+def drag(x: int, from_y: int, by: int) -> None:
+    """Move the content under the finger by `by` pixels, down for positive."""
+    # The first touch slop of a drag never reaches the list (measured: a 100px drag moved it 76),
+    # so the finger travels that much further. Slow, so the list does not fling past the release.
+    slop = touch_slop_px()
+    to_y = from_y + by + (slop if by > 0 else -slop)
+    shell(f"input swipe {x} {from_y} {x} {to_y} 1500")
+    settle(1.0)
+
+
+ALIGN_TOLERANCE_PX = 12
+
+
+def align_top(needle: str, *, optional: bool = False) -> None:
+    """Scroll until `needle`'s top sits flush under the app bar, or as near as the list's end allows.
+
+    `swipe_end` alone leaves wherever the last row lands, and that depends on how long the copy above
+    it runs in each language — so a scene framed by the end of a list starts mid-row in one locale and
+    on a heading in another.
+    """
+    previous = None
+    stuck = 0
+    for attempt in range(6):
+        nodes = dump_ui()
+        node = find(nodes, needle, exact=True)
+        if node is None:
+            if optional:
+                return
+            raise StepFailed(f"no node reading exactly {needle!r} to align")
+        box = scroller_of(nodes, node)
+        # A node cut by the viewport's edge reports only its visible part, so its real top is unknown
+        # until it has been brought fully into view.
+        clipped = attempt == 0 and node.bounds.top <= box.top
+        offset = (box.bottom - box.top) // 4 if clipped else box.top - node.bounds.top
+        if not clipped and abs(offset) <= ALIGN_TOLERANCE_PX:
+            return
+        # Twice, because the first gesture after a cold start can go missing; a list that ignores
+        # two drags is at its end, and as near as it can come is the answer.
+        stuck = stuck + 1 if node.bounds == previous else 0
+        if stuck == 2:
+            return
+        previous = node.bounds
+        middle = (box.top + box.bottom) // 2
+        reach = (box.bottom - box.top) // 2 - touch_slop_px() - 1
+        drag((box.left + box.right) // 2, middle, max(-reach, min(offset, reach)))
+
+
 def tap_field(index: str) -> None:
     """Tap the *n*-th editable field on screen, top to bottom. The IME scenes' way in.
 
@@ -1309,6 +1377,8 @@ STEP_RUNNERS = {
     "back": lambda arg: back(),
     "swipe_up": lambda arg: swipe_up(),
     "swipe_end": lambda arg: swipe_to_end(),
+    "align_top": align_top,
+    "align_top?": lambda arg: align_top(arg, optional=True),
     "tap_field": tap_field,
     "type": type_text,
     "wait": lambda arg: settle(float(arg)),
@@ -1505,7 +1575,7 @@ def scene_needles() -> set[str]:
     if PROMPT_DISMISS is not None:
         needles.add(PROMPT_DISMISS)
     for scene in SCENES:
-        needles.update(arg for kind, arg in scene.steps if kind in ("tap", "tap?", "tap_text"))
+        needles.update(arg for kind, arg in scene.steps if kind in ("tap", "tap?", "tap_text", "align_top", "align_top?"))
     return needles
 
 
