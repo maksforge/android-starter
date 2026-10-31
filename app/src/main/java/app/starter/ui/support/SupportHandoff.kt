@@ -11,17 +11,11 @@ import app.starter.R
 import app.starter.work.startActivitySafely
 
 /**
- * Where a report goes, and it is **frozen the day a build leaves this machine**.
- *
- * ⚠ **This is a placeholder, and shipping it is a release with no way to reach you.** `bootstrap.py`
- * cannot guess it, so it is a line in `docs/DOD.md`'s *Before the first upload*: put a real address
- * here, and the same one in the Play listing's contact field — two routes is one more than anybody
- * needs.
- *
- * Use a **dedicated account**, not a `…+app@` alias on your personal one. A sideloaded APK is never
- * forced to update, so whatever string is compiled in here keeps being mailed for as long as any
- * build survives. An alias is welded to one mailbox forever; a real address can be forwarded
- * anywhere, and handed to another maintainer without handing over your own mail.
+ * Where a report goes, **frozen the day a build leaves this machine**: a sideloaded APK is never
+ * forced to update, so whatever is compiled in here keeps being mailed for as long as any build
+ * survives. `bootstrap.py` writes `<repo>.support@maksforge.com`, an address on our own domain whose
+ * routing can move to any mailbox without a release. The Play listing's contact field carries the
+ * same address — `docs/DOD.md`, *Before the first upload*.
  */
 private const val SUPPORT_ADDRESS = "support@example.com"
 
@@ -48,8 +42,8 @@ private const val PLAY_STORE_APP = "com.android.vending"
  *
  * **The subject is `translatable="false"` and the prompt is not.** The subject carries a filter tag
  * you sort on and the user never reads; the prompt is a sentence addressed to them. A Polish bug
- * report arriving under `Starter #bug` is the correct outcome of an app with a Polish locale, not a
- * bug in this pairing.
+ * report arriving under the untranslated `#bug` subject is the correct outcome of an app with a
+ * Polish locale, not a bug in this pairing.
  */
 enum class SupportRequest(
     @param:StringRes val subject: Int,
@@ -132,7 +126,7 @@ fun Context.rateOnPlay(): Boolean {
  * deletable line by line.
  *
  * `app_name` rather than a literal, because the debug source set overrides it — a report from a
- * sideloaded debug build says *Starter debug* and is told apart from a Play one at a glance.
+ * sideloaded debug build carries the debug label and is told apart from a Play one at a glance.
  *
  * The version block is deliberately **not** in `strings.xml`: it is data rather than prose, there is
  * nothing in it a translator could improve, and `docs/translator-brief.md` §4 keeps exactly this
