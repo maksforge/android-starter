@@ -17,10 +17,17 @@ checklist rather than a discovery.
 
 ## How to decide
 
-**The test is cardinality, not subject matter.** A *fixed set* of values is settings, however many
-members it has: four schedule options are settings, and seven per-day windows are fourteen settings.
-What needs a table is **the user creating rows nobody knew about at build time**. No such rows, no
-Room.
+**The test is shape, not subject matter.**
+
+- **A fixed set is plain DataStore keys**, however many members it has: four schedule options are
+  settings, and seven per-day windows are fourteen settings.
+- **A small list the user makes is JSON under one DataStore key**, read whole and written whole. Its
+  migration story is the decoder's tolerance: unknown keys ignored, a default on every field added
+  later, and one unreadable entry dropped rather than the whole list. It is backed up with the rest of
+  the store, which is right for anything that is really a setting. The first app built from this
+  template keeps its saved presets this way rather than bring Room back.
+- **A table is for querying, relations or partial writes** — records found by a field, joined to
+  other records, or too many to rewrite whole. Only then Room, and ADR-0001 comes with it.
 
 ## The modules
 
