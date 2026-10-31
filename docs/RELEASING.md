@@ -128,10 +128,12 @@ It exits **2** when that version has no `### x.y.z` on the branch or on `main`, 
 is pending — a docs-only branch never owes notes.
 
 **Claude Code runs it before every `git push` it makes — once `bootstrap.py` has installed the hook.**
-`.claude/settings.json` gets a `PreToolUse` hook filtered to `Bash(git push*)`, so no other command
-starts it. Exit 2 blocks the push and hands Claude the message, so the notes are written on the branch
-before it leaves; any other failure only warns, because a broken check must not stop every push. It
-fetches `origin/main` first, since a stale `main` would miss a `feat:` merged elsewhere.
+`.claude/settings.json` gets a `PreToolUse` hook on every Bash call, and `scripts/push-notes-hook.py`
+decides which calls are a real `git push` and runs the gate in the checkout that push comes from — a
+linked worktree, a `cd`, or a `git -C`. Exit 2 blocks the push and hands Claude the message, so the
+notes are written on the branch before it leaves; any other failure only warns, because a broken
+check must not stop every push — and so does a push whose checkout it cannot find. It fetches
+`origin/main` first, since a stale `main` would miss a `feat:` merged elsewhere.
 ⚠ **The template carries no hook, on purpose, and that is why it is a per-repo step.** The template
 never releases (below), so its own `feat:` commits would make every push to it owe notes for a version
 that will never ship. `bootstrap.py` writes the hook as part of turning the template into an app.
