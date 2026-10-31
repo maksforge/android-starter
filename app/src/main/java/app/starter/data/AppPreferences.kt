@@ -31,19 +31,39 @@ enum class ThemeMode {
  *
  * ## Adding a preference
  *
- * A key, a `Flow` that reads it with a default, and a `suspend` setter. Keep the default in the
- * `Flow` rather than writing it on first launch — a default that has been written to disk cannot be
+ * A key, listed in `Keys.SETTINGS` or `Keys.KEPT`, a `Flow` that reads it with a default, and a
+ * `suspend` setter. `AppPreferencesTest` fails until the key is in exactly one of the two lists, so
+ * whoever adds it decides whether *Restore to default* resets it. Keep the default in the `Flow`
+ * rather than writing it on first launch — a default that has been written to disk cannot be
  * changed in a later version without a migration, and a default that has not can.
  */
 class AppPreferences(
     private val store: DataStore<Preferences>,
 ) {
-    private object Keys {
+    internal object Keys {
         val THEME_MODE = stringPreferencesKey("theme_mode")
         val MATERIAL_YOU = booleanPreferencesKey("material_you")
         val REMINDERS_ENABLED = booleanPreferencesKey("reminders_enabled")
         val ONBOARDING_DONE = booleanPreferencesKey("onboarding_done")
         val BACKUP_FOLDER_URI = stringPreferencesKey("backup_folder_uri")
+
+        /** What *Restore to default* removes: everything the user chose, so each reads its default again. */
+        val SETTINGS: List<Preferences.Key<*>> =
+            listOf(
+                THEME_MODE,
+                MATERIAL_YOU,
+                REMINDERS_ENABLED,
+            )
+
+        /**
+         * What *Restore to default* leaves alone: live state, one-time asks, and anything pointing at
+         * a grant the system holds, which a reset would orphan rather than undo.
+         */
+        val KEPT: List<Preferences.Key<*>> =
+            listOf(
+                ONBOARDING_DONE,
+                BACKUP_FOLDER_URI,
+            )
     }
 
     /**
@@ -121,5 +141,13 @@ class AppPreferences(
         store.edit { prefs ->
             if (uri == null) prefs.remove(Keys.BACKUP_FOLDER_URI) else prefs[Keys.BACKUP_FOLDER_URI] = uri
         }
+    }
+
+    /**
+     * Every setting back to how the app came, in one edit. The keys are removed rather than written,
+     * so each reads its default again and stays free to change in a later version.
+     */
+    suspend fun restoreDefaults() {
+        store.edit { prefs -> Keys.SETTINGS.forEach { prefs.remove(it) } }
     }
 }

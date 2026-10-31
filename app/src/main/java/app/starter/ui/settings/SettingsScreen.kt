@@ -6,16 +6,21 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -162,6 +167,7 @@ fun SettingsScreen(
 
             SectionHeader(stringResource(R.string.settings_data))
             LinkRow(stringResource(R.string.settings_backup), LinkTarget.Inside, onClick = onOpenBackup)
+            RestoreDefaultsRow(onRestore = viewModel::restoreDefaults)
 
             SectionHeader(stringResource(R.string.settings_about))
             LinkRow(stringResource(R.string.settings_support), LinkTarget.Inside, onClick = onOpenSupport)
@@ -197,6 +203,44 @@ private fun LanguageRow() {
                 modifier = Modifier.padding(end = Spacing.tight),
             )
         }
+    }
+}
+
+/**
+ * *Restore to default*, behind a confirmation because nothing brings the old values back. What it
+ * resets and what it keeps is `AppPreferences.Keys.SETTINGS` and `KEPT`.
+ */
+@Composable
+private fun RestoreDefaultsRow(onRestore: () -> Unit) {
+    var confirming by rememberSaveable { mutableStateOf(false) }
+
+    LinkRow(
+        title = stringResource(R.string.settings_restore),
+        subtitle = stringResource(R.string.settings_restore_hint),
+        target = LinkTarget.Inside,
+        onClick = { confirming = true },
+    )
+
+    if (confirming) {
+        AlertDialog(
+            onDismissRequest = { confirming = false },
+            title = { Text(stringResource(R.string.settings_restore_confirm_title)) },
+            text = { Text(stringResource(R.string.settings_restore_confirm_body)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        confirming = false
+                        onRestore()
+                    },
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
+                ) {
+                    Text(stringResource(R.string.settings_restore_confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { confirming = false }) { Text(stringResource(R.string.action_cancel)) }
+            },
+        )
     }
 }
 

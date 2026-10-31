@@ -55,6 +55,19 @@ class SettingsViewModel(
         viewModelScope.launch { preferences.setRemindersEnabled(enabled) }
     }
 
+    /**
+     * Every setting back to how the app came, then the two halves the store does not hold: the
+     * theme's window half, as in [setThemeMode], and the language, which the platform keeps
+     * ([setAppLanguage]). Language last, because it recreates the Activity.
+     */
+    fun restoreDefaults() {
+        viewModelScope.launch {
+            preferences.restoreDefaults()
+            applyThemeMode(preferences.themeModeNow())
+            setAppLanguage(null)
+        }
+    }
+
     companion object {
         val Factory: ViewModelProvider.Factory =
             viewModelFactory {
