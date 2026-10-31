@@ -57,9 +57,7 @@ close. Whenever `APP_SCHEMA_VERSION` changes, all five hold before the release g
       and the Play docs. Mail to it arrives through the domain's catch-all; replying from it needs the
       receiving Gmail's *Send mail as* entry, confirmed. Send *Report a problem* from a non-Gmail
       account and check it lands outside Spam. One address everywhere — the listing's contact field
-      and IARC's rating contact too — because a sideloaded build mails what it was compiled with for
-      as long as it survives: an address on our own domain can move mailboxes without a release, and
-      the domain must stay registered for as long as any build does.
+      and IARC's rating contact too; `SupportHandoff.kt` says why it lives on our own domain.
 - [ ] **Write the listing.** `docs/store-listing.md` — every heading in it is parsed by a script.
 - [ ] **Capture the screenshots** with `scripts/screenshots.py` from a release-shaped build, in every
       listing language, into `art/play-screenshots/`. Play wants at least two before the first review.
@@ -72,8 +70,8 @@ close. Whenever `APP_SCHEMA_VERSION` changes, all five hold before the release g
       in the same sitting** — the reasons are in front of you then and gone a week later. It moves in
       the same commit as the privacy policy, every time.
 - [ ] **`LICENSE` and `README.md`.** Bootstrap wrote a source-available notice and a *Contributing*
-      that refuses pull requests — what the apps built from this template chose. Keep both or replace
-      both; they must agree.
+      that refuses pull requests, or with `--licence reserved` a notice that grants nothing and a
+      placeholder. Keep both or replace both; they must agree.
 - [ ] **Create the upload keystore, outside the repo**, and put its four values in
       `local.properties`. Back it up somewhere that is not this machine: losing it means never being
       able to update the app on Play again. Fill in *The upload key* table in `RELEASING.md` the same
@@ -108,6 +106,9 @@ Console matches. A new permission, foreground service or data type is a Console 
       exist. The app this template was extracted from waited one day; that is one datapoint, not a
       promise. **If it comes back rejected, read the reason before changing any artifact.** Changing
       the build first leaves you arguing the reason against a different build.
+- [ ] **Add the production countries in the Console** — *Test and release → Production → Countries /
+      regions*. A new app's production track targets none, the API cannot add them, and a dry run
+      does not catch it ([`RELEASING.md`](RELEASING.md)).
 - [ ] **Decide the first production number.** release-please never jumps to `1.0.0` by itself (with
       the major at 0 even `feat!:` bumps the minor), so it takes a `Release-As: 1.0.0` footer
       ([`RELEASING.md`](RELEASING.md)), or a deliberate decision to stay on 0.x. In order: production

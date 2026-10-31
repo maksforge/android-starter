@@ -72,11 +72,9 @@ let us do otherwise".">
 - **DAOs return `Flow`**, screens collect it. Don't hand-roll refresh calls.
 - **Enums with `TypeConverter`s, not loose strings**, for closed vocabularies. Store enums by
   **name, never ordinal**, so adding a value can't rewrite history.
-- **A new preference is a key, a `Flow` that reads it with its default, and a `suspend` setter.**
-  Keep the default in the read, never written on first launch, and there is nothing to migrate.
-  Auto Backup carries every key to the user's next phone, so ask what it means there: a setting is
-  welcome, live state is not. A list the user makes is JSON under one key, not a table —
-  [`docs/optional-modules.md`](docs/optional-modules.md), *How to decide*.
+- **A new preference follows *Adding a preference* in `data/AppPreferences.kt`.** A list the user
+  makes is JSON under one key, not a table — [`docs/optional-modules.md`](docs/optional-modules.md),
+  *How to decide*.
 - One `ViewModel` per screen, UI state as a single immutable data class.
 - **Developer-only surface lives in `app/src/debug/`, never in `main/` behind `BuildConfig.DEBUG`.**
   With `isMinifyEnabled = false` a statically-false branch is still compiled into the release AAB —
@@ -144,23 +142,23 @@ most time, and none of it is discoverable from the code. What belongs here:>
 - **More than one device attached: name one.** Gradle and adb both reach every attached device;
   set `ANDROID_SERIAL` (both honour it) or pass `adb -s <serial>`. List each phone here with its
   serial, API level, and whether it is a test phone to drive at will or someone's phone in use.
-- **MIUI optimisation off on a Xiaomi test phone** is what makes adb installs tap-free; with it on,
-  every install fails `INSTALL_FAILED_USER_RESTRICTED`. An OS update can turn it back on, so check
-  `adb shell getprop persist.sys.miui_optimization` reads `false`. The toggle is at the bottom of
-  Developer options, revealed by tapping "Reset to default values" a few times.
 - **A screenshot of a sleeping phone is its lock screen.** `adb shell svc power stayon usb` keeps it
   awake on USB, and `adb shell wm dismiss-keyguard` gets past a swipe lock.
-- **Vendor ROM behaviour.** On Xiaomi/HyperOS: split-APK installs (`connectedAndroidTest`) prompt on
-  the phone and a missed prompt fails the run with `INSTALL_FAILED_USER_RESTRICTED`; the workaround
-  is to install both APKs plain and run the instrumentation directly:
+- **On Xiaomi/HyperOS, MIUI optimisation decides whether adb installs work.** Off, they are
+  tap-free; the toggle is at the bottom of Developer options, revealed by tapping "Reset to default
+  values" a few times, and an OS update can turn it back on, so check
+  `adb shell getprop persist.sys.miui_optimization` reads `false`. On, installs fail
+  `INSTALL_FAILED_USER_RESTRICTED`: a split-APK install (`connectedAndroidTest`) prompts on the phone
+  and a missed prompt fails the run, and the first install of a brand-new `applicationId` is refused
+  outright with no dialog. "Install via USB" lifts that but wants a Mi account and a SIM. With
+  neither, install both APKs plain and run the instrumentation directly:
   ```bash
   adb install -r -t app/build/outputs/apk/debug/app-debug.apk
   adb install -r -t app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
   adb shell am instrument -w <applicationId>.debug.test/androidx.test.runner.AndroidJUnitRunner
   ```
-  **A brand-new `applicationId` is a different failure with the same error string**: HyperOS refuses
-  the *first* install of a package outright, with no dialog to miss. Either enable USB installation
-  in developer options, or `adb push` the APK to `/sdcard/Download/` and tap it in the file manager.
+  and for a brand-new `applicationId`, `adb push` the APK to `/sdcard/Download/` and tap it in the
+  file manager.
 - **Xiaomi kills background work aggressively.** Scheduled notifications need battery-optimisation
   exemption and **autostart**, and autostart is the load-bearing one: without it the ROM does not
   start the process for a broadcast at all. It has no appop, it is a Settings toggle, and the grant
