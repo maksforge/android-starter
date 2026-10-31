@@ -103,6 +103,9 @@ Play's surface rather than the app's.
 Would change: lowering it. Any age band under 18 brings in the Families policy and its design and
 SDK requirements.
 
+⚠ Re-read this page once the content rating is submitted. Before any rating existed it showed the
+under-13 bands blocked by *"your app's ESRB rating is set to Teen or higher"*.
+
 ## Government, financial and health features
 
 **No to all three** _(or your answer)_. Answered _<date>_.
