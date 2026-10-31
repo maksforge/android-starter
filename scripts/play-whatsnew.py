@@ -40,6 +40,10 @@ RES = Path(__file__).resolve().parent.parent / "app" / "src" / "main" / "res"
 # Play's limit. It truncates rather than warns, which is why this is asserted and not trusted.
 LIMIT = 500
 
+# The listing's default language: the one a reviewer reads, and the one play-metadata.py hangs the
+# feature graphic on. An app whose listing defaults to Polish sets "pl-PL" here, once.
+DEFAULT_LOCALE = "en-US"
+
 # The heading label used in store-listing.md -> Play's locale code. Play wants a *region*, so `pl`
 # alone is not accepted; `pt-BR` is already regional and stays as it is.
 LOCALES = {
@@ -174,9 +178,8 @@ def main() -> int:
     # Not an error: a listing may carry a language the app does not, and that is the listing's call.
     extra = set(notes) - shipped_locales()
 
-    # en-US first because it is the listing's default language and the one a reviewer reads; the
-    # rest alphabetical so two runs of this script always produce the same block.
-    order = (["en-US"] if "en-US" in notes else []) + sorted(k for k in notes if k != "en-US")
+    # The default language first, the rest alphabetical so two runs produce the same block.
+    order = ([DEFAULT_LOCALE] if DEFAULT_LOCALE in notes else []) + sorted(k for k in notes if k != DEFAULT_LOCALE)
     block = "\n".join(f"<{locale}>\n{notes[locale]}\n</{locale}>" for locale in order)
 
     print(block)

@@ -76,7 +76,6 @@ ROOT = Path(__file__).resolve().parent.parent
 LISTING = ROOT / "docs" / "store-listing.md"
 SCREENSHOTS = ROOT / "art" / "play-screenshots"
 FEATURE_GRAPHIC = ROOT / "art" / "play-feature-graphic.png"
-DEFAULT_LOCALE = "en-US"
 
 # Reuse the release-note parser rather than growing a second one — same document, same fenced-block
 # shape, and the locale table must not be allowed to disagree between the two.
@@ -86,6 +85,7 @@ sys.modules["play_whatsnew"] = whatsnew
 _SPEC.loader.exec_module(whatsnew)
 
 LOCALES = whatsnew.LOCALES
+DEFAULT_LOCALE = whatsnew.DEFAULT_LOCALE
 
 # Play's own limits. Each is enforced because Play truncates or rejects at upload, hours after the
 # person who wrote the copy has moved on.
