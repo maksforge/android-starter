@@ -6,6 +6,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
+import app.starter.ui.common.startActivitySafely
 
 /**
  * Whether this app may place an **exact** alarm right now.

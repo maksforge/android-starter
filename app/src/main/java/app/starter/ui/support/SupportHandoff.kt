@@ -8,7 +8,7 @@ import androidx.annotation.StringRes
 import androidx.core.net.toUri
 import app.starter.BuildConfig
 import app.starter.R
-import app.starter.work.startActivitySafely
+import app.starter.ui.common.startActivitySafely
 
 /**
  * Where a report goes, **frozen the day a build leaves this machine**: a sideloaded APK is never

@@ -39,8 +39,8 @@ scripts in the last column — they are what tells you the strip is finished rat
 ### Room database and the schema gate
 
 - `data/AppDatabase.kt`, `ItemDao.kt`, `ItemEntity.kt`, `ItemRepository.kt`, `Converters.kt`,
-  `Migrations.kt`, `SchemaGate.kt`, `DatabasePreserve.kt`
-- `work/SchemaGuard.kt`, `ui/wipe/SchemaMismatchScreen.kt`, both variants'
+  `Migrations.kt`, `SchemaGate.kt`, `DatabasePreserve.kt`, `BackgroundSchemaGuard.kt`
+- `ui/wipe/SchemaMismatchScreen.kt`, both variants'
   `ui/wipe/SchemaMismatchContinue.kt` and its debug string, the wipe guard's call in `MainApplication`
 - `app/schemas/`, `test/…/data/SchemaGateTest.kt`, `androidTest/…/data/ItemDaoTest.kt`,
   `MigrationTest.kt`
@@ -83,8 +83,16 @@ scripts in the last column — they are what tells you the strip is finished rat
 
 ### Reminders and WorkManager
 
-- `work/ReminderSweep.kt`, `BootReceiver.kt`, `PackageReplacedReceiver.kt`, `ExactAlarms.kt`,
-  `ReminderChannels.kt` and its test; `NotificationPermission.kt` if nothing else posts
+This one is a pure deletion: nothing outside `work/` imports from it. `startActivitySafely` lives in
+`ui/common/Intents.kt` and the background schema check in `data/BackgroundSchemaGuard.kt` because
+other code needs them after the reminders are gone.
+
+- `work/ReminderSweep.kt`, `BootReceiver.kt`, `PackageReplacedReceiver.kt`, `ReceiverWork.kt`,
+  `ExactAlarms.kt`, `ReminderChannels.kt` and its test; `NotificationPermission.kt` if nothing else
+  posts; `Autostart.kt`, `BatteryExemption.kt` and the `com.miui.securitycenter` `<queries>` entry if
+  nothing else runs in the background
+- `app/proguard-rules.pro`'s *Workers, across versions* note; `.gitignore`'s `/doze-*/` and
+  `scripts/doze-capture.sh`, which captures an overnight sweep
 - Manifest: `SCHEDULE_EXACT_ALARM`, `RECEIVE_BOOT_COMPLETED`, the receivers, and the
   androidx.startup `tools:node="remove"` for WorkManager's initializer (the provider itself stays —
   emoji2 registers there)
@@ -95,7 +103,10 @@ scripts in the last column — they are what tells you the strip is finished rat
   receiver stops being called with nothing to say so. `ACCESS_NETWORK_STATE` on an app with no
   `INTERNET` is a line a Play reviewer can ask about; removing WorkManager removes the question.
 - `scripts/aab-permissions.py`'s EXPECTED rows for all of the above, in the same commit.
-- `scripts/device-gate.py`'s `ALARM_TAG` and the exact-alarm line, if nothing schedules.
+- `scripts/device-gate.py`'s reminder checks, if nothing schedules: `ALARM_TAG` and the alarm reads
+  (`app_alarms`, `armed`, `disarmed`), the channel pair (`channel_importance`, `set_channel`), the
+  `--reboot` arm (`wait_for_unlock`, `reboot_and_wait`), and the exact-alarm line. Keep the autostart
+  half while anything else runs in the background.
 - **Settings' *Reminders* section, and the ask and banner behind it** — the `SwitchRow`, the
   `rememberNotificationPermissionAsk` call, the resumed re-read of `notificationsAllowed`, the
   `WarningBanner` and its three `settings_reminders_blocked_*` strings, plus
