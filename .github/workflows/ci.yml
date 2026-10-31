@@ -88,6 +88,9 @@ jobs:
       - name: Notes gate
         run: python3 scripts/notes-gate.py
 
+      - name: Script tests
+        run: python3 -m unittest discover -s scripts
+
       - name: Build debug APK
         run: ./gradlew assembleDebug
 

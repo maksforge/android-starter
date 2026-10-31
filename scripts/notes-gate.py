@@ -106,7 +106,7 @@ def notes_versions(text: str) -> list[str]:
 # carries the new number - and by then the fix is a separate docs PR, one extra PR per release. --pending
 # predicts the number instead, from the same commits release-please will read, so the notes can be
 # written on the branch that brings the change. It is what Claude Code's push hook runs
-# (.claude/settings.json); nothing in CI calls it.
+# (.claude/settings.json, through scripts/push-notes-hook.py); nothing in CI calls it.
 
 MANIFEST = ".release-please-manifest.json"
 CONFIG = ROOT / "release-please-config.json"

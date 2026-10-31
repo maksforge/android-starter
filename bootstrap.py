@@ -77,14 +77,17 @@ SITE = f"https://{DOMAIN}"
 # release-please's PR fails the notes gate. Installed here, not committed to the template, because the
 # template never releases: its own `feat:` commits would make every push to it owe notes for a version
 # that will never ship. An app does release, so it gets the hook the moment it becomes one.
+#
+# It fires on every Bash call — Claude Code ignores an `if:` key here — so `push-notes-hook.py` decides
+# whether the command is a real `git push`, and runs the gate in the checkout that push comes from,
+# which is not `$CLAUDE_PROJECT_DIR` for a linked worktree or a `git -C`.
 PUSH_HOOK = {
     "matcher": "Bash",
     "hooks": [
         {
             "type": "command",
-            "if": "Bash(git push*)",
-            "command": 'git -C "$CLAUDE_PROJECT_DIR" fetch -q origin main 2>/dev/null; '
-            'python3 "$CLAUDE_PROJECT_DIR/scripts/notes-gate.py" --pending',
+            "command": 'hook="$CLAUDE_PROJECT_DIR/scripts/push-notes-hook.py"; [ -f "$hook" ] || exit 0; '
+            'exec python3 "$hook"',
             "timeout": 30,
             "statusMessage": "Checking the next release has its notes",
         }
