@@ -1,7 +1,12 @@
 package app.starter.ui.settings
 
+import android.content.Context
+import android.content.res.Configuration
+import android.os.Build
+import android.os.LocaleList
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.app.LocaleManagerCompat
 import androidx.core.os.LocaleListCompat
 import app.starter.R
 
@@ -73,4 +78,28 @@ fun setAppLanguage(language: AppLanguage?) {
     AppCompatDelegate.setApplicationLocales(
         language?.let { LocaleListCompat.forLanguageTags(it.tag) } ?: LocaleListCompat.getEmptyLocaleList(),
     )
+}
+
+/**
+ * This context in the app's chosen language, for strings built outside an activity.
+ *
+ * Below Android 13 AppCompat applies the chosen language to activities only, so a notification, a
+ * channel name or anything else a worker, receiver or service builds from the application context
+ * comes out in the phone's language. From 13 the platform applies it to every context and follows a
+ * later change, which a pinned configuration would stop, so this returns the context untouched there.
+ *
+ * Read through [LocaleManagerCompat] rather than [AppCompatDelegate]: AppCompat loads its stored
+ * language only when an activity attaches, so in a process the OS started for a worker or a broadcast
+ * [AppCompatDelegate.getApplicationLocales] is still empty. The read is a small file, so call this
+ * off the main thread.
+ */
+fun Context.inAppLanguage(): Context {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) return this
+    val locales = LocaleManagerCompat.getApplicationLocales(this)
+    if (locales.isEmpty) return this
+    val configuration =
+        Configuration(resources.configuration).apply {
+            setLocales(LocaleList.forLanguageTags(locales.toLanguageTags()))
+        }
+    return createConfigurationContext(configuration)
 }

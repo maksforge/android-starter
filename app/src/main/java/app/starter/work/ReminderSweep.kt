@@ -6,6 +6,7 @@ import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
+import app.starter.ui.settings.inAppLanguage
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
@@ -65,7 +66,8 @@ class ReminderSweepWorker(
         // missed morning. Give each independent job its own `runCatching` rather than one around
         // all of them, so a failure in one does not cost the others their morning.
         runCatching {
-            applicationContext.ensureReminderChannels()
+            val context = applicationContext.inAppLanguage()
+            context.ensureReminderChannels()
             // → Derive what is due today and post it. Nothing to derive yet.
         }
 
