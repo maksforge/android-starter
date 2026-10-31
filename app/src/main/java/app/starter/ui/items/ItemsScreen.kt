@@ -21,6 +21,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -70,6 +71,19 @@ fun ItemsScreen(
                     modifier = Modifier.fillMaxSize().padding(insets),
                     contentPadding = PaddingValues(Spacing.base),
                 ) {
+                    item(key = "count") {
+                        Text(
+                            text =
+                                pluralStringResource(
+                                    R.plurals.items_count,
+                                    state.items.size,
+                                    state.items.size,
+                                ),
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(bottom = Spacing.tight),
+                        )
+                    }
                     // `key` is what lets Compose recycle the right row when the list reorders. With
                     // no key it matches by index, so inserting at the top re-renders everything and
                     // any per-row state moves to the wrong row.
