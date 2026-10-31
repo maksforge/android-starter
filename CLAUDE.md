@@ -78,8 +78,9 @@ let us do otherwise".">
 - One `ViewModel` per screen, UI state as a single immutable data class.
 - **Developer-only surface lives in `app/src/debug/`, never in `main/` behind `BuildConfig.DEBUG`.**
   With `isMinifyEnabled = false` a statically-false branch is still compiled into the release AAB —
-  a hide, not a strip — and its strings are still inside the translation gate. The seam is
-  `ui/settings/DebugSettings.kt`, one file per variant, with a no-op in `src/release/`.
+  a hide, not a strip — and its strings are still inside the translation gate. Each seam is one
+  file per variant with a no-op in `src/release/`: `ui/settings/DebugSettings.kt` and
+  `ui/wipe/SchemaMismatchContinue.kt`.
 - **Colours come from `MaterialTheme`, never literals.** The palette is generated from four seeds by
   `scripts/gen_scheme.py`; edit the seeds and regenerate, never a single role.
 - **Spacing comes from `theme/Spacing.kt`.** Six steps on a 4dp grid; no screen invents a seventh.

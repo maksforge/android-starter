@@ -84,9 +84,10 @@ scripts in the last column — they are what tells you the strip is finished rat
 
 ### Reminders and WorkManager
 
-This one is a pure deletion: nothing outside `work/` imports from it. `startActivitySafely` lives in
-`ui/common/Intents.kt` and the background schema check in `data/BackgroundSchemaGuard.kt` because
-other code needs them after the reminders are gone.
+This one is a pure deletion: outside `work/`, only `MainApplication` and Settings' *Reminders*
+section use it, and both are listed below. `startActivitySafely` lives in `ui/common/Intents.kt` and
+the background schema check in `data/BackgroundSchemaGuard.kt` because other code needs them after
+the reminders are gone.
 
 - `work/ReminderSweep.kt`, `BootReceiver.kt`, `PackageReplacedReceiver.kt`, `ReceiverWork.kt`,
   `ExactAlarms.kt`, `ReminderChannels.kt` and its test; `NotificationPermission.kt` if nothing else
@@ -98,7 +99,8 @@ other code needs them after the reminders are gone.
 - Manifest: `SCHEDULE_EXACT_ALARM`, `RECEIVE_BOOT_COMPLETED`, the receivers, and the
   androidx.startup `tools:node="remove"` for WorkManager's initializer (the provider itself stays —
   emoji2 registers there)
-- `MainApplication`'s `Configuration.Provider`; Gradle's `work.runtime` and `work.testing`
+- `MainApplication`'s `Configuration.Provider` and `ensureSweepEnqueued` call; Gradle's
+  `work.runtime` and `work.testing`
 - ⚠ **WorkManager merges three permissions your source never declares** — `WAKE_LOCK`,
   `ACCESS_NETWORK_STATE`, `FOREGROUND_SERVICE` — and `RECEIVE_BOOT_COMPLETED` for good measure. If you
   keep a boot receiver but drop WorkManager, **declare `RECEIVE_BOOT_COMPLETED` yourself first**, or the
@@ -112,8 +114,11 @@ other code needs them after the reminders are gone.
 - **Settings' *Reminders* section, and the ask and banner behind it** — the `SwitchRow`, the
   `rememberNotificationPermissionAsk` call, the resumed re-read of `notificationsAllowed`, the
   `WarningBanner` and its three `settings_reminders_blocked_*` strings, plus
-  `AppPreferences.remindersEnabled`. That whole block is `PLAN.md` rule 4 worked through for one
-  ask; it is the shape to copy for *your* first ask, so read it before deleting it.
+  `AppPreferences.remindersEnabled`, `Keys.REMINDERS_ENABLED` and its place in `Keys.SETTINGS`, and
+  the reminder lines in `AppPreferencesTest`. That whole block is `PLAN.md` rule 4 worked through
+  for one ask; it is the shape to copy for *your* first ask, so read it before deleting it.
+- "reminders" in `settings_restore_hint` and `settings_restore_confirm_body`, in every language, or
+  *Restore defaults* promises to reset something that is gone.
 - ADR-0003 gets its amendment.
 
 ### The placeholder domain

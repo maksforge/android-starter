@@ -21,12 +21,14 @@ import app.starter.data.ThemeMode
  *
  * ## When it is called
  *
- * Twice, and both are load-bearing:
+ * Three times, and each is load-bearing:
  *
  * - `MainApplication.onCreate`, before any Activity exists, so the very first window is right.
  * - `SettingsViewModel.setThemeMode`, when the user taps a chip. List `uiMode` in the activity's
  *   `configChanges` and AppCompat hands the running Activity an `onConfigurationChanged` instead of
  *   recreating it — the app repaints in place rather than blinking through a restart.
+ * - `SettingsViewModel.restoreDefaults`, which resets the stored mode and would otherwise leave the
+ *   window on the old one until the next cold start.
  *
  * Kotlin note: a top-level function, not a method on [ThemeMode]. The enum lives in `data/` and
  * describes a stored preference; teaching it about AppCompat would put an Android UI dependency
