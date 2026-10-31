@@ -13,9 +13,9 @@ import app.starter.work.startActivitySafely
 /**
  * Where a report goes, **frozen the day a build leaves this machine**: a sideloaded APK is never
  * forced to update, so whatever is compiled in here keeps being mailed for as long as any build
- * survives. `bootstrap.py` writes `<repo>.support@maksforge.com`, an address on our own domain whose
- * routing can move to any mailbox without a release. The Play listing's contact field carries the
- * same address — `docs/DOD.md`, *Before the first upload*.
+ * survives. So it is an address on a domain we own, whose routing can move to any mailbox without a
+ * release, and the domain stays registered for as long as any build does. The Play listing's contact
+ * field carries the same address — `docs/DOD.md`, *Before the first upload*.
  */
 private const val SUPPORT_ADDRESS = "support@example.com"
 

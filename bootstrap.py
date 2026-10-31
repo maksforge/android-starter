@@ -92,8 +92,7 @@ PUSH_HOOK = {
 }
 
 # Written over the template's LICENSE, whose "use it for anything" would read as exactly that grant on
-# an app's public repository. Both licences reserve every right; `source-available` is what the apps
-# built from this template settled on, `reserved` grants nothing while you decide.
+# an app's public repository. Both reserve every right; `reserved` grants nothing while you decide.
 LICENCE_GRANTS = {
     "source-available": """This source code is published for reading, review, and verification of what
 the released app does. It is not open source.
@@ -376,8 +375,6 @@ def main() -> int:
     )
     print(f"README.md and LICENSE replaced — {args.licence}")
 
-    # A build freezes the address, not the mailbox behind it, so it is on our own domain, whose
-    # routing can point anywhere.
     rewrite(
         ROOT / "app/src/main/java" / args.namespace.replace(".", "/") / "ui/support/SupportHandoff.kt",
         [(f'SUPPORT_ADDRESS = "{TEMPLATE_SUPPORT_ADDRESS}"', f'SUPPORT_ADDRESS = "{support}"')],
@@ -433,6 +430,14 @@ def main() -> int:
     elif not args.keep_git:
         print("git: left alone (pass --fresh-git to start a new history)")
 
+    support_step = (
+        f"  {support} - mail to it arrives through the domain's catch-all, but replying\n"
+        "  from it does not work until the inbox it forwards to adds it under Gmail's Settings ->\n"
+        "  Accounts -> \"Send mail as\" and the confirmation link is clicked\n"
+        if support.endswith(f"@{DOMAIN}")
+        else f"  {support} - send a report to it from the app and confirm it arrives and can be answered\n"
+    )
+    placeholders = "LICENSE, README.md" if args.licence == "reserved" else "README.md"
     print(
         "\nDone. Next:\n"
         "  git config core.hooksPath .githooks     # Conventional Commits, which release-please needs\n"
@@ -444,15 +449,13 @@ def main() -> int:
         "  project hooks only from the folder it was launched in\n"
         "\n"
         "Then, before the first upload (docs/DOD.md has the full list):\n"
-        f"  {support} - mail to it arrives through the domain's catch-all, but replying\n"
-        "  from it does not work until the inbox it forwards to adds it under Gmail's Settings ->\n"
-        "  Accounts -> \"Send mail as\" and the confirmation link is clicked\n"
+        f"{support_step}"
         "  docs/optional-modules.md  - delete what the app does not need while deleting is free\n"
         "  scripts/aab-permissions.py - EXPECTED lists the template's permissions; keep it true\n"
         "  scripts/edge-to-edge.py    - SCENES walks the template's screens; rewrite it against yours\n"
         f"  maksforge/maksforge.github.io - put the icon at assets/icons/{ROOT.name}.webp and add the app\n"
         "  to the home page; docs/_config.yml's description is still a placeholder\n"
-        "  README.md, CLAUDE.md's placeholders"
+        f"  {placeholders}, CLAUDE.md's placeholders"
     )
     return 0
 
