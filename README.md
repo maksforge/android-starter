@@ -13,7 +13,7 @@ the part that takes weeks to get right and looks like nothing on a screenshot.
 ```bash
 gh repo create my-app --template maksforge/android-starter --private --clone
 cd my-app
-python3 bootstrap.py --name "My App" --namespace app.myapp --appid io.github.<you>.myapp
+python3 bootstrap.py --name "My App" --namespace app.myapp --appid com.maksforge.myapp
 git config core.hooksPath .githooks     # Conventional Commits — release-please depends on it
 ./gradlew assembleDebug test
 rm bootstrap.py

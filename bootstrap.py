@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Turn this template into a named app. Run once, then delete this file.
 
-    python3 bootstrap.py --name "Kettle" --namespace app.kettle --appid com.example.kettle
+    python3 bootstrap.py --name "Kettle" --namespace app.kettle --appid com.maksforge.kettle
 
 What it changes, and nothing else:
 
@@ -33,8 +33,7 @@ except `scripts/project.py`, which says so.
 
 **`--appid` is the one that can never change.** A Play Console package name is fixed the moment the
 app entry is created: not renameable, not transferable to a new listing without losing every install
-and review. Choose it as if you were choosing a domain — and if you do not own one, namespace it
-under your GitHub account, `io.github.<user>.<app>`, which is a name you provably control. Never
+and review. A new MaksForge app is `com.maksforge.<app>`, under the domain the brand owns. Never
 ship `com.example.*`: Play refuses it, and finding that out at the first upload is late. `--namespace` is only the Kotlin package
 root and can be refactored any afternoon, so it is fine for the two to disagree — and they often
 should, because a good store identity and a good source package have different constraints.
@@ -229,7 +228,7 @@ def main() -> int:
     )
     parser.add_argument("--name", required=True, help='Human name, e.g. "Kettle". Shown on the launcher.')
     parser.add_argument("--namespace", required=True, help="Kotlin package root, e.g. app.kettle")
-    parser.add_argument("--appid", required=True, help="Play package name — permanent. e.g. com.example.kettle")
+    parser.add_argument("--appid", required=True, help="Play package name — permanent. e.g. com.maksforge.kettle")
     parser.add_argument("--db", help="Database filename (default: <lowercased name>.db)")
     parser.add_argument(
         "--support",
@@ -261,7 +260,7 @@ def main() -> int:
         print(
             f"bootstrap: warning — '{args.appid}' is a placeholder id. Play refuses com.example.*, and the\n"
             "  applicationId can never change once the Play entry exists. Fine for a throwaway; for an app,\n"
-            "  re-run with --appid io.github.<user>.<app> or a domain you own.",
+            "  re-run with --appid com.maksforge.<app>.",
             file=sys.stderr,
         )
     database = args.db or f"{re.sub(r'[^a-z0-9]', '', args.name.lower()) or 'app'}.db"
