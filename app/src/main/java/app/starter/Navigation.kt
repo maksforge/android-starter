@@ -172,10 +172,13 @@ private fun AppNavigationBar(
     NavigationBar {
         for (destination in TopLevelDestination.entries) {
             val label = stringResource(destination.label)
+            val selected = destination == current
             NavigationBarItem(
-                selected = destination == current,
+                selected = selected,
                 onClick = { onSelect(destination) },
-                icon = { Icon(destination.icon, contentDescription = null) },
+                icon = {
+                    Icon(if (selected) destination.selectedIcon else destination.icon, contentDescription = null)
+                },
                 // `contentDescription = null` on the icon is correct **because** the label is
                 // present: a screen reader would otherwise announce the same word twice.
                 label = { Text(label) },
