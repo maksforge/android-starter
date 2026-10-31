@@ -18,9 +18,6 @@ import org.junit.runner.RunWith
  * What Android reads off the installed manifest. Nothing in Kotlin references these receivers — the
  * OS finds them by their intent filters — so a renamed class or a dropped filter compiles cleanly and
  * leaves the app deaf to the broadcast. Add a case here for every component the OS starts on its own.
- *
- * A test that needs a runtime permission granted first: `UiAutomation.grantRuntimePermission` does
- * not exist on API 26, so run `pm grant <package> <permission>` through `executeShellCommand` instead.
  */
 @RunWith(AndroidJUnit4::class)
 class ManifestWiringTest {
