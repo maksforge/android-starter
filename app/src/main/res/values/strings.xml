@@ -72,7 +72,7 @@
     <!-- Help and feedback. The three `support_subject_*` are translatable="false" on purpose:
          they are the filter tag you sort your own mail on and the user never reads them, while
          the prompt beside each one is a sentence addressed to them and is translated. A Polish
-         report arriving under "Starter #bug" is the correct outcome. -->
+         report arriving under the untranslated "#bug" subject is the correct outcome. -->
     <string name="support_title">Help and feedback</string>
     <string name="support_report">Report a problem</string>
     <string name="support_report_hint">Opens your email app with what the app knows about your phone already filled in.</string>

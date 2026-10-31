@@ -12,9 +12,13 @@ What it changes, and nothing else:
   * `scripts/gen_scheme.py`  — the package the generated Color.kt declares
   * `res/values*/strings.xml`— `app_name`, and the debug build's "<name> debug" label
   * `README.md`              — replaced by a short one for the app; the template's describes the template
-  * `LICENSE`                — replaced by an all-rights-reserved notice until you choose a licence
+  * `LICENSE`                — replaced by a source-available notice (`--licence reserved` for one
+                               that grants nothing yet)
   * `release-please-config.json`, `.release-please-manifest.json`, `CHANGELOG.md`
   * `docs/_config.yml`       — the Pages site title, its icon path, and the in-development status
+  * the support address      — `SupportHandoff.kt`, the site, the privacy policy and the Play docs,
+                               `<repo>.support@maksforge.com` unless `--support` says otherwise
+  * `docs/*.md`              — `<repo>` in the maksforge.com and GitHub URLs
   * `fastlane/Appfile`, the three publish workflows — the Play package name
   * `app/schemas/`           — the exported schema moves with the database class
   * `.claude/settings.json`  — the Claude Code push hook (created; the template has none, see PUSH_HOOK)
@@ -62,6 +66,11 @@ ROOT = Path(__file__).resolve().parent
 TEMPLATE_NAMESPACE = "app.starter"
 TEMPLATE_APP_ID = "com.example.starter"
 TEMPLATE_NAME = "Starter"
+TEMPLATE_SUPPORT_ADDRESS = "support@example.com"
+
+ORG = "maksforge"
+DOMAIN = "maksforge.com"
+SITE = f"https://{DOMAIN}"
 
 # The Claude Code hook that runs `notes-gate.py --pending` before every `git push` Claude makes, so a
 # release's Play notes are written on the branch that brings the change instead of in a docs PR after
@@ -82,15 +91,32 @@ PUSH_HOOK = {
     ],
 }
 
-# Written over the template's LICENSE. Reserves everything: a notice that grants nothing is the only
-# safe default for a repository that is public from its first push. Replace it with the licence you
-# choose — the two apps behind this template chose differently (a noncommercial licence, and
-# source-available with all rights reserved), which is why the template does not choose for you.
+# Written over the template's LICENSE, whose "use it for anything" would read as exactly that grant on
+# an app's public repository. Both licences reserve every right; `source-available` is what the apps
+# built from this template settled on, `reserved` grants nothing while you decide.
+LICENCE_GRANTS = {
+    "source-available": """This source code is published for reading, review, and verification of what
+the released app does. It is not open source.
+
+You may not copy, modify, distribute, sublicense, publish, or make derivative
+works of this software, in source or binary form, or distribute builds of it
+through any app store or other channel, without prior written permission.
+Viewing and forking within GitHub, as permitted by the GitHub Terms of
+Service, is not a grant of any of the rights above.""",
+    "reserved": """No licence is granted yet. This notice was written by the template's bootstrap and
+stands until the owner replaces it with the licence they choose.""",
+}
+
+CONTRIBUTING = {
+    "source-available": "{name} is source-available, not open source: read it, verify it, file issues. Pull requests are not\n"
+    "accepted — see [LICENSE](LICENSE).",
+    "reserved": "<Say whether pull requests are accepted — and make it agree with [LICENSE](LICENSE).>",
+}
+
 LICENSE = """{name}
 Copyright (c) {year} {owner}. All rights reserved.
 
-No licence is granted yet. This notice was written by the template's bootstrap and
-stands until the owner replaces it with the licence they choose.
+{grant}
 
 Third-party components bundled in the built application remain under their own
 licences, reproduced in the app's licences screen and in
@@ -112,7 +138,7 @@ is on Play yet.
 
 ## Contributing
 
-<Say whether pull requests are accepted — and make it agree with [LICENSE](LICENSE).>
+{contributing}
 
 ## Build
 
@@ -204,6 +230,17 @@ def main() -> int:
     parser.add_argument("--appid", required=True, help="Play package name — permanent. e.g. com.example.kettle")
     parser.add_argument("--db", help="Database filename (default: <lowercased name>.db)")
     parser.add_argument(
+        "--support",
+        help=f"Support address, compiled into every build (default: <repo>.support@{DOMAIN}). "
+        "Pick one nobody could take for another product's official support.",
+    )
+    parser.add_argument(
+        "--licence",
+        choices=sorted(LICENCE_GRANTS),
+        default="source-available",
+        help="LICENSE to write (default: source-available)",
+    )
+    parser.add_argument(
         "--keep-git",
         action="store_true",
         help="Keep this repository's git history. The default is to leave git alone entirely; "
@@ -226,12 +263,16 @@ def main() -> int:
             file=sys.stderr,
         )
     database = args.db or f"{re.sub(r'[^a-z0-9]', '', args.name.lower()) or 'app'}.db"
+    repo = ROOT.name
+    support = args.support or f"{repo}.support@{DOMAIN}"
 
     plan = [
         ("namespace", TEMPLATE_NAMESPACE, args.namespace),
         ("applicationId", TEMPLATE_APP_ID, args.appid),
         ("app name", TEMPLATE_NAME, args.name),
         ("database", "app.db", database),
+        ("support", TEMPLATE_SUPPORT_ADDRESS, support),
+        ("licence", "template", args.licence),
     ]
     print("bootstrap will apply:")
     for label, old, new in plan:
@@ -321,15 +362,34 @@ def main() -> int:
         ],
     )
 
-    # --- The two files that describe the *template* ------------------------------------------------
-    # Both were rewritten by hand in the first bootstrapped app's first hour, and the LICENSE is the one that
-    # matters: the template's own says "use it for anything", and left on an app's public repository
-    # it reads as exactly that grant. Reserving all rights is the only default that grants nothing
-    # by accident; choosing an actual licence is yours, and README says so.
     owner = subprocess.run(["git", "config", "user.name"], cwd=ROOT, capture_output=True, text=True).stdout.strip()
-    (ROOT / "LICENSE").write_text(LICENSE.format(name=args.name, owner=owner or "<owner>", year=date.today().year))
-    (ROOT / "README.md").write_text(README.format(name=args.name))
-    print("README.md and LICENSE replaced — the LICENSE reserves all rights until you choose one")
+    (ROOT / "LICENSE").write_text(
+        LICENSE.format(
+            name=args.name,
+            owner=owner or "<owner>",
+            year=date.today().year,
+            grant=LICENCE_GRANTS[args.licence],
+        )
+    )
+    (ROOT / "README.md").write_text(
+        README.format(name=args.name, contributing=CONTRIBUTING[args.licence].format(name=args.name))
+    )
+    print(f"README.md and LICENSE replaced — {args.licence}")
+
+    # A build freezes the address, not the mailbox behind it, so it is on our own domain, whose
+    # routing can point anywhere.
+    rewrite(
+        ROOT / "app/src/main/java" / args.namespace.replace(".", "/") / "ui/support/SupportHandoff.kt",
+        [(f'SUPPORT_ADDRESS = "{TEMPLATE_SUPPORT_ADDRESS}"', f'SUPPORT_ADDRESS = "{support}"')],
+    )
+    doc_replacements = [
+        ("<support email>", support),
+        (f"{SITE}/<repo>/", f"{SITE}/{repo}/"),
+        (f"{ORG}/<repo>", f"{ORG}/{repo}"),
+        ("<owner>/<repo>", f"{ORG}/{repo}"),
+    ]
+    for doc in ["index.md", "privacy-policy.md", "store-listing.md", "play-app-content.md", "RELEASING.md"]:
+        rewrite(ROOT / "docs" / doc, doc_replacements)
 
     # --- Everywhere the applicationId is stated outside Gradle ----------------------------------
     # These are not derived at build time on purpose: a wrong value uploads to a *different* Play
@@ -384,14 +444,15 @@ def main() -> int:
         "  project hooks only from the folder it was launched in\n"
         "\n"
         "Then, before the first upload (docs/DOD.md has the full list):\n"
-        "  ui/support/SupportHandoff.kt - SUPPORT_ADDRESS is support@example.com. Nothing here can\n"
-        "  guess it, and a build that ships it has no way for anyone to reach you\n"
+        f"  {support} - mail to it arrives through the domain's catch-all, but replying\n"
+        "  from it does not work until the inbox it forwards to adds it under Gmail's Settings ->\n"
+        "  Accounts -> \"Send mail as\" and the confirmation link is clicked\n"
         "  docs/optional-modules.md  - delete what the app does not need while deleting is free\n"
         "  scripts/aab-permissions.py - EXPECTED lists the template's permissions; keep it true\n"
         "  scripts/edge-to-edge.py    - SCENES walks the template's screens; rewrite it against yours\n"
         f"  maksforge/maksforge.github.io - put the icon at assets/icons/{ROOT.name}.webp and add the app\n"
         "  to the home page; docs/_config.yml's description is still a placeholder\n"
-        "  LICENSE, README.md, CLAUDE.md's placeholders"
+        "  README.md, CLAUDE.md's placeholders"
     )
     return 0
 
