@@ -52,7 +52,8 @@ answer to "where could my data be":
    it goes is up to you and to whatever app you sent it to. Some phones' share screens only hand a
    file over if every app that can receive one may read it before you choose, so the app allows
    that when you share a backup. Once you pick an app, the others lose that access, and if you close
-   the share screen without picking, all of them lose it as soon as you are back in the app. The one
+   the share screen without picking, all of them lose it as soon as you are back in the app (or, if
+   the phone closed the app meanwhile, when you next share a backup). The one
    you picked keeps it until you next share a backup or restart the phone.
 3. **Google Play.** Installing and updating an app is a transaction between your phone and Google,
    with its own privacy policy. The developer of this app receives aggregate, anonymous statistics —
