@@ -142,15 +142,15 @@ def render(size, mask_circle=False):
     # (a gradient was tried, and a painted hole matches it at one height only), and the hole is
     # declared by winding in `mark.py` — the one declaration the vector, the raster and the
     # monochrome layer all read.
+    #
+    # Declaration order, because the raster has no winding rule: a solid declared after a hole lands
+    # inside it, as a dot inside a ring does. Punching every hole after every solid would erase that
+    # dot here while the vector kept it.
     layer = Image.new("RGBA", (big, big), (0, 0, 0, 0))
     d = ImageDraw.Draw(layer)
     tf = mark.fit(big, ART_SIZE * SS)
     for e in mark.PARTS:
-        if not e.hole:
-            d.polygon(mark.outline(e, tf), fill=mark.MARK_INK + (255,))
-    for e in mark.PARTS:
-        if e.hole:
-            d.polygon(mark.outline(e, tf), fill=(0, 0, 0, 0))
+        d.polygon(mark.outline(e, tf), fill=(0, 0, 0, 0) if e.hole else mark.MARK_INK + (255,))
     img.alpha_composite(layer)
 
     inset = (CANVAS - VISIBLE) // 2 * SS
