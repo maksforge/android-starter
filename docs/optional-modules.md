@@ -68,7 +68,8 @@ scripts in the last column — they are what tells you the strip is finished rat
 - `data/backup/`, `ui/backup/`, `test/…/data/backup/`, `AppBackupAgent.kt` and its manifest
   attributes; `scripts/upgrade-diff.py`, which reads those backups
 - If nothing else shares a file: `ui/common/Share.kt`, `ShareBook.kt` and `ShareBookTest.kt`,
-  `MainActivity.onResume`'s `revokeUnpickedShare()`, the `ShareChosenReceiver` entry and the two
+  `MainActivity.onResume`'s `revokeUnpickedShare()`, `ManifestWiringTest`'s share case, the
+  `ShareChosenReceiver` entry and the two
   `SEND` entries in the manifest's `<queries>`, and the privacy policy's sentences on sharing
 - `kotlinx.serialization` **stays**: Navigation 3 serialises every `NavKey`.
 - **Platform Auto Backup takes over**, with `android:dataExtractionRules` if anything must stay on
@@ -91,6 +92,7 @@ other code needs them after the reminders are gone.
   `ExactAlarms.kt`, `ReminderChannels.kt` and its test; `NotificationPermission.kt` if nothing else
   posts; `Autostart.kt`, `BatteryExemption.kt` and the `com.miui.securitycenter` `<queries>` entry if
   nothing else runs in the background
+- `androidTest/…/ManifestWiringTest.kt`'s boot, update and boot-permission cases
 - `app/proguard-rules.pro`'s *Workers, across versions* note; `.gitignore`'s `/doze-*/` and
   `scripts/doze-capture.sh`, which captures an overnight sweep
 - Manifest: `SCHEDULE_EXACT_ALARM`, `RECEIVE_BOOT_COMPLETED`, the receivers, and the
