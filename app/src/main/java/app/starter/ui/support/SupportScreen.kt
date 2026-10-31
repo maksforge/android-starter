@@ -1,10 +1,8 @@
 package app.starter.ui.support
 
 import androidx.annotation.StringRes
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -21,6 +19,8 @@ import androidx.compose.ui.res.stringResource
 import app.starter.R
 import app.starter.theme.Spacing
 import app.starter.ui.common.DetailScaffold
+import app.starter.ui.common.LinkRow
+import app.starter.ui.common.LinkTarget
 
 /**
  * The route out of the app, for a user — or a tester — who has found something.
@@ -79,18 +79,20 @@ fun SupportScreen(
             // bottom of this file — that is the one place a request's wording lives, and Settings
             // reads it from there rather than keeping a second copy.
             for (request in listOf(SupportRequest.Bug, SupportRequest.Feature)) {
-                SupportRow(
+                LinkRow(
                     title = stringResource(request.titleRes()),
-                    hint = stringResource(request.hintRes()),
+                    subtitle = stringResource(request.hintRes()),
+                    target = LinkTarget.Outside,
                     onClick = {
                         reportHandOff(context.sendSupportMail(request), R.string.support_no_mail_app)
                     },
                 )
             }
 
-            SupportRow(
+            LinkRow(
                 title = stringResource(R.string.support_rate),
-                hint = stringResource(R.string.support_rate_hint),
+                subtitle = stringResource(R.string.support_rate_hint),
+                target = LinkTarget.Outside,
                 onClick = { reportHandOff(context.rateOnPlay(), R.string.support_no_play) },
             )
 
@@ -108,35 +110,6 @@ fun SupportScreen(
                 )
             }
         }
-    }
-}
-
-/**
- * A tappable row: what it does, and what will happen if you tap it.
- *
- * The hint is not decoration. Every row here leaves the app for another one, and a row that opens
- * somebody's mail composer with no warning is the kind of thing a user backs out of and never taps
- * again.
- */
-@Composable
-private fun SupportRow(
-    title: String,
-    hint: String,
-    onClick: () -> Unit,
-) {
-    Column(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .clickable(onClick = onClick)
-                .padding(horizontal = Spacing.base, vertical = Spacing.snug),
-    ) {
-        Text(title, style = MaterialTheme.typography.bodyLarge)
-        Text(
-            text = hint,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
     }
 }
 

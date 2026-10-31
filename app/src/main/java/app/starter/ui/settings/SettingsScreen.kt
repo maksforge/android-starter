@@ -1,16 +1,13 @@
 package app.starter.ui.settings
 
 import android.content.Context
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -32,6 +29,8 @@ import app.starter.R
 import app.starter.data.ThemeMode
 import app.starter.theme.Spacing
 import app.starter.ui.appViewModelExtras
+import app.starter.ui.common.LinkRow
+import app.starter.ui.common.LinkTarget
 import app.starter.ui.common.SectionHeader
 import app.starter.ui.common.SwitchRow
 import app.starter.ui.common.WarningBanner
@@ -115,9 +114,10 @@ fun SettingsScreen(
             // The channel that stands in for a native read-through (docs/translator-brief.md §8),
             // beside the picker because that is where somebody is standing the moment a translation
             // reads wrong. Its wording lives with the other two requests, in ui/support/.
-            SettingsRow(
+            LinkRow(
                 title = stringResource(SupportRequest.Language.titleRes()),
                 subtitle = stringResource(SupportRequest.Language.hintRes()),
+                target = LinkTarget.Outside,
                 onClick = { context.sendSupportMail(SupportRequest.Language) },
             )
 
@@ -161,11 +161,11 @@ fun SettingsScreen(
             }
 
             SectionHeader(stringResource(R.string.settings_data))
-            SettingsRow(stringResource(R.string.settings_backup), onClick = onOpenBackup)
+            LinkRow(stringResource(R.string.settings_backup), LinkTarget.Inside, onClick = onOpenBackup)
 
             SectionHeader(stringResource(R.string.settings_about))
-            SettingsRow(stringResource(R.string.settings_support), onClick = onOpenSupport)
-            SettingsRow(stringResource(R.string.settings_licences), onClick = onOpenLicences)
+            LinkRow(stringResource(R.string.settings_support), LinkTarget.Inside, onClick = onOpenSupport)
+            LinkRow(stringResource(R.string.settings_licences), LinkTarget.Inside, onClick = onOpenLicences)
 
             // The developer-only section. In a release build this composable is a no-op that
             // renders nothing — see `src/release/…/DebugSettings.kt`. It is a source-set seam
@@ -195,38 +195,6 @@ private fun LanguageRow() {
                 onClick = { setAppLanguage(language) },
                 label = { Text(stringResource(language.labelRes)) },
                 modifier = Modifier.padding(end = Spacing.tight),
-            )
-        }
-    }
-}
-
-/**
- * A row that goes somewhere.
- *
- * The subtitle is optional because most rows here name a screen inside the app, where the title is
- * the whole promise. A row that **leaves** the app — opening a mail composer, a system settings
- * page — takes one, because a tap that hands the user to another app with no warning is the kind of
- * thing they back out of and never tap again.
- */
-@Composable
-private fun SettingsRow(
-    title: String,
-    onClick: () -> Unit,
-    subtitle: String? = null,
-) {
-    Column(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .clickable(onClick = onClick)
-                .padding(horizontal = Spacing.base, vertical = Spacing.base),
-    ) {
-        Text(text = title, style = MaterialTheme.typography.bodyLarge)
-        if (subtitle != null) {
-            Text(
-                text = subtitle,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }
