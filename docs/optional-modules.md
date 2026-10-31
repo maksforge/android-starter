@@ -134,21 +134,33 @@ the reminders are gone.
 
 ### The tip (Play Billing)
 
-- `tip/`, `test/…/tip/`, `ui/support/SupportViewModel.kt` and the tip section in `SupportScreen.kt`
-- The one-time ask: `TipAskCard` and `ItemsScreen`'s `onOpenSupport` parameter in `ui/items/`, the
-  `onOpenSupport` the `Items` entry passes in `Navigation.kt`, `showTipAsk` and `answerTipAsk` in
-  `ItemsViewModel`, `AppPreferences.tipAsked` / `markTipAsked`, `Keys.TIP_ASKED` and its place in
-  `Keys.KEPT`, and the tip lines in `AppPreferencesTest`
-- `AppContainer.tipJar` and `installedAt`; `settleTipsOnEveryForeground` in `MainApplication`
+Every line it adds is deleted outright, along with the imports that leave unused; the two **edits**
+are marked.
+
+- `tip/`, `test/…/tip/`; `ui/support/SupportViewModel.kt` and `TipSection.kt`, and in
+  `SupportScreen.kt` the `TipSection()` call and the KDoc paragraph that names it
+- The one-time ask: `ui/items/TipAskCard.kt`; `ItemsScreen`'s `onOpenSupport` parameter and its
+  `showTipAsk` item; the `onOpenSupport` the `Items` entry passes in `Navigation.kt`; in
+  `ItemsViewModel`, `showTipAsk`, the `preferences`, `tipJar` and `installedAt` parameters and their
+  arguments in `Factory`, the `withTipAsk` line, the `init` block and `answerTipAsk`
+- `AppPreferences.tipAsked` / `markTipAsked`, `Keys.TIP_ASKED` and its place in `Keys.KEPT`, and the
+  tip lines in `AppPreferencesTest`
+- `AppContainer.tipJar` and `installedAt` (`applicationScope` keeps its `@Suppress("unused")` for
+  this day); `settleTipsOnEveryForeground` and its call in `MainApplication`
 - The `items_tip_ask_*` and `support_tip*` strings, in every language
-- Gradle: `billing.ktx`, `androidx.lifecycle.process`, and licensee's `allowUrl` for Google's terms
-- Manifest: the `INTERNET` `tools:node="remove"` — harmless once billing is gone, but it then
-  removes nothing and reads as a reason that no longer exists
-- `scripts/aab-permissions.py`: the `BILLING` row in EXPECTED, and billing's name in the
-  `ACCESS_NETWORK_STATE` row — the whole row if WorkManager has already gone
-- `play-app-content.md`: the `BILLING` row and the `datatransport` paragraph under *What the
-  artifact carries* (and billing's name in the `ACCESS_NETWORK_STATE` row), *Content rating* back to
-  all No, Data safety point 5 and *The tip*
+- Gradle: `billing.ktx`, `androidx.lifecycle.process` and licensee's `allowUrl` for Google's terms in
+  `app/build.gradle.kts`; the `billing` version and the `billing-ktx` and
+  `androidx-lifecycle-process` aliases in `libs.versions.toml`
+- Manifest: the `INTERNET` `tools:node="remove"` and its comment — harmless once billing is gone, but
+  it then removes nothing and reads as a reason that no longer exists
+- `scripts/aab-permissions.py`: the `BILLING` row and its comment, and the datatransport comment above
+  `ACCESS_NETWORK_STATE`. **Edit** that row's note back to WorkManager alone, or delete the row if
+  WorkManager has already gone.
+- `play-app-content.md`: the `BILLING` row and the `datatransport` paragraph under *What the artifact
+  carries*; the tip paragraph under *Content rating*, which leaves the all-No answer; Data safety
+  point 5 and its *Would change* bullet; and *The tip*. **Edit** the `ACCESS_NETWORK_STATE` row back
+  to WorkManager alone. Keep *A payment-link tip*: an app that drops the billing tip is the one most
+  likely to try a link next.
 - The privacy policy's billing-library sentence under *The app collects nothing*, its billing bullet
   and its tip paragraph
 - `CLAUDE.md`'s Play Billing row in Stack and `tip/` line in Layout; `CONTEXT.md`'s **Tip** row

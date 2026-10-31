@@ -1,16 +1,12 @@
 package app.starter.ui.support
 
-import androidx.activity.compose.LocalActivity
 import androidx.annotation.StringRes
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -20,13 +16,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import app.starter.R
 import app.starter.theme.Spacing
-import app.starter.tip.TipOffer
-import app.starter.tip.TipOutcome
-import app.starter.ui.appViewModelExtras
 import app.starter.ui.common.DetailScaffold
 import app.starter.ui.common.LinkRow
 import app.starter.ui.common.LinkTarget
@@ -44,20 +35,19 @@ import app.starter.ui.common.LinkTarget
  * The bottom bar switches between roots, and support is not a root; it is somewhere you go once,
  * from the place you already go to look things up.
  *
- * **The `ViewModel` is the tip's alone** (ADR-0007): Play's prices and what the last tip became. The
- * three rows above it build an intent from constants and hand it to the system, and their one piece
- * of state — which app, if any, the last hand-off found missing — belongs to this composition.
+ * No `ViewModel`, because there is no state to hold: three rows, each of which builds an intent from
+ * constants and hands it to the system. The one piece of state is which app, if any, the last
+ * hand-off found missing. That belongs to this composition and nothing else.
+ *
+ * The tip is the one exception: [TipSection], below the rows, holds the screen's one `ViewModel`,
+ * for Play's prices and what the last tip became (ADR-0007).
  */
 @Composable
 fun SupportScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: SupportViewModel =
-        viewModel(factory = SupportViewModel.Factory, extras = appViewModelExtras()),
 ) {
     val context = LocalContext.current
-    val activity = LocalActivity.current
-    val state by viewModel.uiState.collectAsStateWithLifecycle()
 
     // Not `rememberSaveable`: this says "the tap you just made went nowhere", which is only true of
     // the tap you just made. A rotation clears it, and the next tap says it again if it is still so.
@@ -123,59 +113,7 @@ fun SupportScreen(
                 )
             }
 
-            // Absent rather than disabled where Play sells nothing: no Play, a debug build, or
-            // products not yet created in the Console.
-            if (state.offers.isNotEmpty() && activity != null) {
-                TipSection(
-                    offers = state.offers,
-                    outcome = state.outcome,
-                    onTip = { offer -> viewModel.tip(activity, offer) },
-                )
-            }
-        }
-    }
-}
-
-/**
- * Tipping the developer (ADR-0007). The buttons are Play's own prices in the user's currency, so
- * there is no label to translate on them, and nothing here says what a tip buys, because it buys
- * nothing.
- */
-@Composable
-private fun TipSection(
-    offers: List<TipOffer>,
-    outcome: TipOutcome?,
-    onTip: (TipOffer) -> Unit,
-) {
-    Column(modifier = Modifier.padding(horizontal = Spacing.base, vertical = Spacing.snug)) {
-        Text(stringResource(R.string.support_tip), style = MaterialTheme.typography.bodyLarge)
-        Text(
-            text = stringResource(R.string.support_tip_hint),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        // Wraps rather than scrolls: four prices do not fit one row on a narrow phone.
-        FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(Spacing.tight),
-            modifier = Modifier.padding(top = Spacing.tight),
-        ) {
-            offers.forEach { offer ->
-                OutlinedButton(onClick = { onTip(offer) }) { Text(offer.price) }
-            }
-        }
-        outcome?.let {
-            Text(
-                text =
-                    stringResource(
-                        when (it) {
-                            TipOutcome.Thanked -> R.string.support_tip_thanks
-                            TipOutcome.Pending -> R.string.support_tip_pending
-                        },
-                    ),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(top = Spacing.tight),
-            )
+            TipSection()
         }
     }
 }
