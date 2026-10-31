@@ -14,8 +14,8 @@ import app.starter.tip.TipJar
 import app.starter.tip.tipAskDue
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.Instant
@@ -54,13 +54,11 @@ class ItemsViewModel(
      * `Lazily` would never release.
      */
     val state: StateFlow<ItemsUiState> =
-        combine(repository.observeAll(), preferences.tipAsked, tipJar.offers) { items, asked, offers ->
-            ItemsUiState(
-                items = items,
-                loading = false,
-                showTipAsk = offers.isNotEmpty() && tipAskDue(asked, items.size, installedAt, Instant.now()),
-            )
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ItemsUiState())
+        repository
+            .observeAll()
+            .map { items -> ItemsUiState(items = items, loading = false) }
+            .withTipAsk(preferences.tipAsked, tipJar.offers, installedAt)
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ItemsUiState())
 
     init {
         // Prices are asked for only once the ask could otherwise be due — one product query saved
@@ -86,8 +84,12 @@ class ItemsViewModel(
             viewModelFactory {
                 initializer {
                     val app = this[APPLICATION_KEY] as MainApplication
-                    val container = app.container
-                    ItemsViewModel(container.items, container.preferences, container.tipJar, container.installedAt)
+                    ItemsViewModel(
+                        app.container.items,
+                        app.container.preferences,
+                        app.container.tipJar,
+                        app.container.installedAt,
+                    )
                 }
             }
     }

@@ -75,14 +75,14 @@ There is no account and no sign-in. Would change: a feature behind a login.
 
 **The IARC questionnaire.** Answered _<date>_, category _<category>_, rating contact
 `<support email>` — the listing's address, so there is one address to keep alive, not two. Every
-question answered No gives Everyone (ESRB) and PEGI 3; the tip's one Yes, below, adds Brazil's 14+.
+question answered No gives Everyone (ESRB) and PEGI 3.
 
 The category is *All other app types* unless the app's purpose is something the questionnaire names.
 Not *Social or communication* for an app that only touches calls or messages: that category means
 people talking to each other through the app.
 
-Every content question **No**, and one **Yes**: *does the app allow users to purchase digital goods?*
-— the tip (ADR-0007). Its follow-up, *can these purchases include random items* (loot boxes), is
+**The tip turns one answer to Yes**: *does the app allow users to purchase digital goods?*
+(ADR-0007). Its follow-up, *can these purchases include random items* (loot boxes), is
 **No**. The first two apps built from this template, both category *All other app types*, came out
 at PEGI 3, ESRB Everyone, USK 0 and 3+ elsewhere, with an *In-app purchases* notice — and **Brazil's
 ClassInd at 14+**, which it gives any app selling digital goods. Expect the same, and decide before
@@ -223,19 +223,41 @@ them:**
    name what came from your own use instead. Presenting your own work as tester-driven is an easy
    dishonest sentence, and the application does not need one.
 
+## A payment-link tip (Payments policy — not a question Play asks, but one a reviewer answers)
+
+**Default: no payment link on any surface the release controls**, whatever the app sells through Play
+Billing. Not in the app, and not on the pages the listing links to. Read this before adding one,
+because the policy text and its enforcement disagree.
+
+- **The text allows it.** Payments policy §3.2 treats a tip as a peer-to-peer payment, outside Play
+  Billing, when **100% reaches the creator** and **nothing unlocks** — no badge, no theme, no
+  thanks-screen. §4's anti-steering rule excepts §3. So: one personal payment link, worded as a *tip to
+  a person*, never a *donation to a project*.
+- **Enforcement has rejected apps anyway.** StreetComplete (February 2022) was rejected for in-app
+  Patreon, Liberapay and GitHub Sponsors links — and **for a link to its own home page, because that
+  page carried donation information**. A Buy Me a Coffee link in the app this template was extracted
+  from was flagged the same way. None of those is the §3.2 shape (tiers unlock things, a platform takes
+  a cut, a project is not a person), but the distinction has to survive a reviewer skimming for
+  "external payment link", and a pre-launch rejection costs the closed-test window.
+- **The reach is one level out.** The first app built from this template moved its tip from the app to
+  the repository and the Pages site, then noticed that the listing's *Website* field and the last line
+  of its full description point at exactly those pages. So "nothing the app links to" includes what
+  the **listing** links to.
+- **When to revisit:** once the app is live, with a track record to appeal from. The cheapest shape
+  then is a tip on the repository alone, with the listing's Website field and full description kept
+  off it. A Play Billing consumable is the unambiguous alternative, at the cost of a billing
+  dependency, Google's cut, and an *in-app purchases* badge on the listing.
+
+Region carve-outs (US external links since October 2025, the EEA's external-offers program) do not
+help: both are fee programs with reporting obligations, which is not a serious route for occasional
+tips. A sentence promising a *future* tip, with nothing to click, is a statement about pricing and is
+fine anywhere.
+
 ## The tip (ADR-0007)
 
-**A Play Billing consumable, not a link.** The template ships it; an app that does not want it
-deletes it before the first upload (`optional-modules.md`).
-
-Why not the cheaper route, kept here because the question comes back: Payments policy §3.2 treats a
-peer-to-peer tip outside Play Billing as allowed when 100% reaches the creator and nothing unlocks,
-but enforcement has rejected apps anyway — StreetComplete (February 2022) for in-app Patreon,
-Liberapay and GitHub Sponsors links, **and for a link to its own home page because that page carried
-donation information**. "Nothing the app links to" therefore includes what the *listing* links to: the
-*Website* field and the full description. Region carve-outs (US external links since October 2025,
-the EEA's external-offers program) are fee programs with reporting obligations, not a route for
-occasional tips. A Play Billing purchase needs no exemption at all.
+**A Play Billing consumable, not a link** — the section above is why. The template ships it; an app
+that does not want it deletes it before the first upload (`optional-modules.md`), and the section
+above still holds after it is gone.
 
 What a reviewer can still ask about, and the answer:
 
