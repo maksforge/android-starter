@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.starter.theme.AppTheme
+import app.starter.ui.common.revokeUnpickedShare
 import app.starter.ui.wipe.SchemaMismatchScreen
 
 /**
@@ -24,6 +25,11 @@ import app.starter.ui.wipe.SchemaMismatchScreen
  * all still work unchanged.
  */
 class MainActivity : AppCompatActivity() {
+    override fun onResume() {
+        super.onResume()
+        revokeUnpickedShare()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 

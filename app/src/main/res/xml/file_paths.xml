@@ -13,6 +13,8 @@
     shared only on the owner's own explicit "share" tap — a copy they cannot get off the phone is
     only marginally better than no copy at all. Neither the live database nor the media directories
     are listed here.
+
+    Each name is its directory's own, by which ui/common/Share.kt takes back what a share granted.
 -->
 <paths>
     <cache-path

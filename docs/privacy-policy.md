@@ -49,7 +49,11 @@ answer to "where could my data be":
    Google states apps cannot read. You can turn this off in your phone's settings; the app has a
    link to that screen.
 2. **Backups you export yourself.** A backup is a file, and once you have shared or saved it, where
-   it goes is up to you and to whatever app you sent it to.
+   it goes is up to you and to whatever app you sent it to. Some phones' share screens only hand a
+   file over if every app that can receive one may read it before you choose, so the app allows
+   that when you share a backup. Once you pick an app, the others lose that access, and if you close
+   the share screen without picking, all of them lose it as soon as you are back in the app. The one
+   you picked keeps it until you next share a backup or restart the phone.
 3. **Google Play.** Installing and updating an app is a transaction between your phone and Google,
    with its own privacy policy. The developer of this app receives aggregate, anonymous statistics —
    install counts, crash rates, country-level breakdowns — and no information about individuals.
