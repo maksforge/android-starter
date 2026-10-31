@@ -15,6 +15,7 @@
     <string name="action_save">Zapisz</string>
     <string name="action_edit">Edytuj</string>
     <string name="action_delete">Usuń</string>
+    <string name="action_cancel">Anuluj</string>
 
     <string name="item_add">Dodaj rzecz</string>
     <string name="item_detail_title">Rzecz</string>
@@ -47,6 +48,11 @@
     <string name="settings_reminders_blocked_action">Otwórz ustawienia powiadomień</string>
     <string name="settings_data">Dane</string>
     <string name="settings_backup">Kopia zapasowa i przywracanie</string>
+    <string name="settings_restore">Przywróć ustawienia domyślne</string>
+    <string name="settings_restore_hint">Motyw, kolory, przypomnienia i język</string>
+    <string name="settings_restore_confirm_title">Przywrócić ustawienia domyślne?</string>
+    <string name="settings_restore_confirm_body">Motyw, kolory, przypomnienia i język wrócą do wartości początkowych. Twoje rzeczy i kopie zapasowe zostaną bez zmian. Tego nie można cofnąć.</string>
+    <string name="settings_restore_confirm">Przywróć</string>
     <string name="settings_about">O aplikacji</string>
     <string name="settings_support">Pomoc i opinie</string>
     <string name="settings_licences">Licencje open source</string>
