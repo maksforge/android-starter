@@ -183,6 +183,11 @@ GESTURE_MIN_API = 29
 # run died here on API 26, one minute in.
 POST_NOTIFICATIONS_MIN_API = 33
 
+# Per-app languages are Android 13, and so is `cmd locale set-app-locales`. Below it there is no
+# per-app locale to hand back, and `shell()` raising on the missing command would kill `--restore`
+# (here and in `screenshots.py`) before it put rotation and Do Not Disturb back.
+APP_LOCALES_MIN_API = 33
+
 # The AOSP navigation-mode overlays, all declaring `android:category="…systemui.navbar"`, which is
 # what makes `enable-exclusive --category` a single call rather than an enable plus N disables.
 NAVBAR_OVERLAYS = {
@@ -487,6 +492,10 @@ def set_locale(locale: str | None) -> None:
     """
     if locale is not None:
         require_bcp47(locale)
+    if api_level() < APP_LOCALES_MIN_API:
+        if locale is None:
+            return
+        sys.exit(f"--locale needs per-app languages, API {APP_LOCALES_MIN_API}+; this is API {api_level()}")
     global _LOCALE
     _LOCALE = locale
     if locale is None:
