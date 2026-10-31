@@ -83,8 +83,10 @@ class TipJar(
         BillingClient
             .newBuilder(context.applicationContext)
             .setListener { result, purchases ->
-                if (result.responseCode == BillingClient.BillingResponseCode.OK && purchases != null) {
-                    scope.launch { announce(purchases) }
+                when (listenerActionFor(result.responseCode)) {
+                    ListenerAction.Announce -> purchases?.let { scope.launch { announce(it) } }
+                    ListenerAction.SettleOwned -> scope.launch { settleOwned(announce = true) }
+                    ListenerAction.Ignore -> Unit
                 }
             }.enablePendingPurchases(PendingPurchasesParams.newBuilder().enableOneTimeProducts().build())
             .enableAutoServiceReconnection()
@@ -127,7 +129,9 @@ class TipJar(
      * `MainApplication`, because Play refunds what is not acknowledged in three days. Announces
      * nothing: what it finds may be any tip, from any day.
      */
-    suspend fun settlePending() {
+    suspend fun settlePending() = settleOwned(announce = false)
+
+    private suspend fun settleOwned(announce: Boolean) {
         if (!connect()) return
         val owned =
             client.queryPurchasesAsync(
@@ -137,7 +141,8 @@ class TipJar(
             Log.i(TAG, "no purchases: ${owned.billingResult.debugMessage}")
             return
         }
-        owned.purchasesList.forEach { settle(it) }
+        val settled = owned.purchasesList.map { settle(it) }
+        if (announce) outcomeOf(settled)?.let { _outcomes.tryEmit(it) }
     }
 
     /** Opens Play's sheet. The answer arrives at the listener, because the sheet is Play's to close. */
@@ -220,6 +225,20 @@ private fun offerOf(details: ProductDetails): TipOffer? {
     val offer = details.oneTimePurchaseOfferDetails ?: return null
     return TipOffer(details.productId, offer.formattedPrice, offer.priceAmountMicros, details)
 }
+
+internal enum class ListenerAction { Announce, SettleOwned, Ignore }
+
+/**
+ * `ITEM_ALREADY_OWNED` means an earlier tip of the same product is still unconsumed, and Play will
+ * not sell it again until it is. Settling what is owned there and then lets the user's next tap work,
+ * instead of waiting for the next foreground.
+ */
+internal fun listenerActionFor(responseCode: Int): ListenerAction =
+    when (responseCode) {
+        BillingClient.BillingResponseCode.OK -> ListenerAction.Announce
+        BillingClient.BillingResponseCode.ITEM_ALREADY_OWNED -> ListenerAction.SettleOwned
+        else -> ListenerAction.Ignore
+    }
 
 /** What one purchase in a listener callback came to. */
 internal enum class Settled { Consumed, Pending, Unsettled }
