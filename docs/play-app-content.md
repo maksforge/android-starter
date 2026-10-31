@@ -138,18 +138,21 @@ The answer rests on one fact per route data could take:
    and sends it from their own mail client, or does not. ⚠ **Do not write "Play exempts support
    flows" in a re-declaration.** The help page has no such exemption; the claim is true because of
    what "collect" means, and that is the reason to give.
-5. **A tip is still "no data collected".** The payment is between the user and Google Play: Play's
-   own sheet takes the payment details, and the app never sees them. What the app receives is a
-   purchase token and a product id, which it hands straight back to Play to consume; it stores
-   neither and sends neither anywhere. The developer's order report comes from Google, not from the
-   app. Read the Console's help text on Play Billing at each re-declaration, and if it ever asks for
-   *Purchase history* to be declared, declare it as collected by Google Play and update the privacy
-   policy in the same commit.
+5. **A tip is still "no data collected", by the same help page's FAQ on payment services.** It names
+   Google Play's billing system as a service whose payment data you don't need to declare when the
+   app never accesses that information and the service collects it directly from the user under its
+   own terms. The tip meets both: Play's own sheet takes the payment details, under Google's terms,
+   and the app never sees them. The FAQ also asks about other financial data and about what the app
+   receives back: that is a purchase token and a product id, which the app hands straight back to Play
+   to consume, never stores and never sends anywhere else, so by the definition above it is not
+   collected. The developer's order report comes from Google, not from the app.
 
 Would change any of it:
 
 - **`INTERNET` on the artifact**, from our code or a dependency. Every answer here becomes a question.
 - **Anything the app sends by itself**, such as crash reporting or analytics. There is none today.
+- **The app keeping a purchase**, such as a tip history or a supporter badge: that is *Purchase
+  history* the app collects, and the form has no way to declare it as Google Play's.
 - **Location of any kind**, including through a photo's metadata surviving into storage or a backup.
 
 ## Advertising ID
