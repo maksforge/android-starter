@@ -36,4 +36,15 @@ class TipOutcomeTest {
         assertFalse(consumeSettled(BillingResponseCode.ERROR))
         assertFalse(consumeSettled(BillingResponseCode.SERVICE_DISCONNECTED))
     }
+
+    @Test
+    fun `a tip Play says is already owned is settled at once`() {
+        assertEquals(ListenerAction.SettleOwned, listenerActionFor(BillingResponseCode.ITEM_ALREADY_OWNED))
+    }
+
+    @Test
+    fun `a completed purchase is announced and a cancel is not`() {
+        assertEquals(ListenerAction.Announce, listenerActionFor(BillingResponseCode.OK))
+        assertEquals(ListenerAction.Ignore, listenerActionFor(BillingResponseCode.USER_CANCELED))
+    }
 }
