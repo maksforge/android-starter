@@ -96,15 +96,15 @@ class BackupExporter(
                     }
 
                     for (kind in scope.mediaKinds) {
-                        val directory = File(filesDir, kind.directory)
-                        val files = directory.listFiles()?.sortedBy(File::getName).orEmpty()
-                        for (file in files) {
-                            if (!file.isFile) continue
+                        for (file in mediaFilesIn(filesDir, kind).sortedBy(File::getName)) {
                             // The path inside the archive matches the path on disk relative to
                             // filesDir, which is what makes a restore a plain extraction. Media
                             // paths in the database are the same relative form, so nothing has to
                             // be rewritten on the way back in.
-                            zip.putNextEntry(ZipEntry("${kind.directory}/${file.name}"))
+                            val entry = ZipEntry("${kind.directory}/${file.name}")
+                            // A restore puts it back, so the Auto Backup budget's newest-first order survives.
+                            entry.time = file.lastModified()
+                            zip.putNextEntry(entry)
                             file.inputStream().use { it.copyTo(zip) }
                             zip.closeEntry()
                         }

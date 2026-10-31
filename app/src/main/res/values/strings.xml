@@ -104,7 +104,9 @@
     <!-- Android's own automatic backup to the user's Google account, as the app last saw it run. %1$s is a localised date and time. -->
     <string name="backup_auto_last">Android last backed up the app on %1$s.</string>
     <string name="backup_auto_none">Android has not backed up the app yet.</string>
-    <string name="backup_auto_over_quota">Android\'s last automatic backup was refused as too large, so it holds nothing from this app. Export a backup yourself.</string>
+    <!-- %1$s is a localised date and time: when the last automatic backup before the refused one ran. -->
+    <string name="backup_auto_over_quota">Android\'s latest automatic backup was refused as too large. The one from %1$s is the last that went through. Export a backup yourself.</string>
+    <string name="backup_auto_over_quota_none_earlier">Android\'s latest automatic backup was refused as too large, and the app has no record of an earlier one that went through. Export a backup yourself.</string>
     <!-- Follows backup_auto_last in the same paragraph. Thumbnails are the small copies of photos. -->
     <plurals name="backup_auto_left_out">
         <item quantity="one">%d older thumbnail did not fit and was left out.</item>

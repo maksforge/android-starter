@@ -53,18 +53,25 @@ system — for a feature the platform already provides.
 
 ## Consequences
 
-- "The small media" is bounded, not assumed small: thumbnails go newest first under a 20 MiB budget
-  (`data/backup/AutoBackup.kt`), so enough of them can never push the set over the quota and take the
+- "The small media" is bounded, not assumed small: thumbnails go newest first under a budget taken
+  from the quota the transport reports, less a margin, with each file charged its tar overhead
+  (`data/backup/AutoBackup.kt`). Enough of them can never push the set over the quota and take the
   database with it. A device-to-device transfer has no quota and carries every thumbnail and photo.
+  "Newest" is the file's mtime, so the export carries it and a restore puts it back.
 - Each attempt leaves a marker, and `onQuotaExceeded` overwrites it, so the Backup screen can say
-  when Android last backed up, how many thumbnails were left out, or that the whole set was refused.
+  when Android last backed up, how many thumbnails were left out, or that the latest set was refused
+  and which earlier one is the last that went through. Android reports no other transport failure,
+  so the marker records an attempt that was not refused, not a confirmed upload. A device-to-device
+  transfer writes none.
 - The export is written to a `.part` and renamed on success, so an interrupted export leaves no file
   that looks shareable and is not. A restore writes each live file the same way, so a kill mid-swap
-  leaves the old file or the new one whole, never half of one.
+  leaves the old file or the new one whole, never half of one. The next restore sweeps the stray
+  `.part` files, and neither the export nor Auto Backup counts them as media.
 - Exports and restores share one process-wide lock, and Back is held while a restore runs: leaving
   the screen would not stop it, only hide it.
-- A restore **deletes the `-wal` and `-shm` sidecars** before copying the new database in. Leaving a
-  log belonging to a database that no longer exists is a corrupt open on next launch.
+- A restore copies the new database to `app.db.part`, then **deletes the `-wal` and `-shm`
+  sidecars**, then renames it over `app.db`; Auto Backup's `onRestoreFinished` does the same. Leaving
+  a log belonging to a different database is a corrupt open on next launch.
 - The restorer guards against **zip slip** — an entry named `../../databases/other.db`. The archive
   arrives from the user's storage, not from the app, so it is never trusted even though the app wrote
   the format.

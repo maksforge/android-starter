@@ -76,7 +76,8 @@
     <string name="backup_restore">Przywróć z pliku…</string>
     <string name="backup_auto_last">Android ostatnio utworzył kopię zapasową aplikacji %1$s.</string>
     <string name="backup_auto_none">Android nie utworzył jeszcze kopii zapasowej aplikacji.</string>
-    <string name="backup_auto_over_quota">Ostatnia automatyczna kopia zapasowa Androida została odrzucona jako zbyt duża, więc nie zawiera nic z tej aplikacji. Wyeksportuj kopię samodzielnie.</string>
+    <string name="backup_auto_over_quota">Najnowsza automatyczna kopia zapasowa Androida została odrzucona jako zbyt duża. Ostatnia, która przeszła, pochodzi z %1$s. Wyeksportuj kopię samodzielnie.</string>
+    <string name="backup_auto_over_quota_none_earlier">Najnowsza automatyczna kopia zapasowa Androida została odrzucona jako zbyt duża, a aplikacja nie ma zapisu wcześniejszej, która by przeszła. Wyeksportuj kopię samodzielnie.</string>
     <plurals name="backup_auto_left_out">
         <item quantity="one">%d starsza miniatura nie zmieściła się i została pominięta.</item>
         <item quantity="few">%d starsze miniatury nie zmieściły się i zostały pominięte.</item>

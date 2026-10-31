@@ -9,8 +9,6 @@ import java.io.File
 import java.io.InputStream
 import java.util.zip.ZipInputStream
 
-private const val PART_SUFFIX = ".part"
-
 /**
  * One export or restore at a time, across the process. A screen's busy flag cannot be the guard: a
  * screen left and opened again gets a new ViewModel while the old one's work may still be running,
@@ -53,9 +51,10 @@ sealed interface RestoreResult {
  * anyway — turns every interrupted restore into total data loss. A user restoring a backup is
  * already having a bad day.
  *
- * ⚠️ **The database sidecars must go.** Deleting `app.db` and leaving `app.db-wal` behind leaves
- * SQLite with a log belonging to a database that no longer exists, and the result is a corrupt open
- * on next launch. The restore deletes all three.
+ * ⚠️ **The database sidecars must go.** Replacing `app.db` and leaving `app.db-wal` behind leaves
+ * SQLite with a log belonging to a different database, and the result is a corrupt open on next
+ * launch. The restore deletes both sidecars once the new database is beside the live one, then
+ * renames it over `app.db` ([installDatabase]).
  */
 class BackupRestorer(
     private val databaseFile: File,
@@ -71,6 +70,7 @@ class BackupRestorer(
                 return@withContext RestoreResult.TooNew(manifest.schemaVersion, supportedSchema)
             }
 
+            sweepPartFiles(databaseFile, filesDir)
             stagingDir.deleteRecursively()
             stagingDir.mkdirs()
             try {
@@ -78,13 +78,7 @@ class BackupRestorer(
 
                 // Everything is on disk and readable before anything live is touched.
                 val stagedDatabase = File(stagingDir, DATABASE_ENTRY)
-                if (stagedDatabase.isFile) {
-                    databaseFile.parentFile?.mkdirs()
-                    val part = stagedDatabase.copyTo(File(databaseFile.path + PART_SUFFIX), overwrite = true)
-                    // The sidecars after the slow copy and before the rename: see the class KDoc.
-                    for (suffix in listOf("-wal", "-shm")) File(databaseFile.path + suffix).delete()
-                    part.moveOver(databaseFile)
-                }
+                if (stagedDatabase.isFile) installDatabase(stagedDatabase, databaseFile)
 
                 for (directory in stagingDir.listFiles().orEmpty()) {
                     if (!directory.isDirectory || directory.name == "database") continue
@@ -94,8 +88,7 @@ class BackupRestorer(
                         // Merge rather than replace: media filenames are UUIDs, so a name collision
                         // means the same file, and keeping files the archive does not mention costs
                         // disk where deleting them costs someone their photos.
-                        val live = File(target, file.name)
-                        file.copyTo(File(live.path + PART_SUFFIX), overwrite = true).moveOver(live)
+                        installFile(file, File(target, file.name))
                     }
                 }
                 RestoreResult.Restored(manifest.schemaVersion)
@@ -103,17 +96,6 @@ class BackupRestorer(
                 stagingDir.deleteRecursively()
             }
         }
-
-    /**
-     * A rename within one directory, so a kill mid-restore leaves either the old file or the new one
-     * whole beside a stray `.part`, never a truncated live file. A copy, not a rename, is what was slow.
-     */
-    private fun File.moveOver(target: File) {
-        if (!renameTo(target)) {
-            copyTo(target, overwrite = true)
-            delete()
-        }
-    }
 
     private fun readManifest(source: () -> InputStream): BackupManifest? =
         runCatching {
@@ -140,6 +122,7 @@ class BackupRestorer(
                 }
                 target.parentFile?.mkdirs()
                 target.outputStream().use { zip.copyTo(it) }
+                if (entry.time >= 0) target.setLastModified(entry.time)
             }
         }
     }

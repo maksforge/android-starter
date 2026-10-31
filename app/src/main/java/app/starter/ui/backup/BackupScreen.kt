@@ -112,27 +112,24 @@ fun BackupScreen(
  */
 @Composable
 private fun AutoBackupStatus(marker: AutoBackupMarker?) {
-    val lastBackupAt = marker?.lastBackupAt
+    val date =
+        marker?.lastBackupAt?.let {
+            DateTimeFormatter
+                .ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT)
+                .format(it.atZone(ZoneId.systemDefault()))
+        }
     val text =
         when {
-            marker?.overQuota == true -> stringResource(R.string.backup_auto_over_quota)
-            lastBackupAt == null -> stringResource(R.string.backup_auto_none)
+            marker?.overQuota == true && date != null -> stringResource(R.string.backup_auto_over_quota, date)
+            marker?.overQuota == true -> stringResource(R.string.backup_auto_over_quota_none_earlier)
+            date == null -> stringResource(R.string.backup_auto_none)
             else -> {
-                val date =
-                    DateTimeFormatter
-                        .ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT)
-                        .format(lastBackupAt.atZone(ZoneId.systemDefault()))
                 val last = stringResource(R.string.backup_auto_last, date)
-                if (marker.leftOutThumbnails == 0) {
+                val leftOut = marker?.leftOutThumbnails ?: 0
+                if (leftOut == 0) {
                     last
                 } else {
-                    val leftOut =
-                        pluralStringResource(
-                            R.plurals.backup_auto_left_out,
-                            marker.leftOutThumbnails,
-                            marker.leftOutThumbnails,
-                        )
-                    "$last $leftOut"
+                    "$last ${pluralStringResource(R.plurals.backup_auto_left_out, leftOut, leftOut)}"
                 }
             }
         }
