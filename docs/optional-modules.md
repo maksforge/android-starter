@@ -33,15 +33,17 @@ checklist rather than a discovery.
 
 ## The modules
 
-Each row lists what to delete together. Delete a module, then build, then run `./gradlew test` and the
-scripts in the last column — they are what tells you the strip is finished rather than the compiler.
+Each row lists what to delete together. Delete a module, then build, then run `./gradlew test lint` and
+the scripts in the last column — they are what tells you the strip is finished rather than the compiler.
+Lint fails on every resource the deleted code was the last to use (`UnusedResources` is an error,
+because resource shrinking would strip it from the bundle), so remove those in every language.
 
 ### Room database and the schema gate
 
 - `data/AppDatabase.kt`, `ItemDao.kt`, `ItemEntity.kt`, `ItemRepository.kt`, `Converters.kt`,
   `Migrations.kt`, `SchemaGate.kt`, `DatabasePreserve.kt`, `BackgroundSchemaGuard.kt` and, if the
   reminders stay, `ReminderSweep`'s call to it
-- `ui/wipe/SchemaMismatchScreen.kt`, both variants'
+- `ui/wipe/SchemaMismatchScreen.kt` and its `schema_mismatch_*` strings, both variants'
   `ui/wipe/SchemaMismatchContinue.kt` and its debug string, the wipe guard's call in `MainApplication`
 - `app/schemas/`, `test/…/data/SchemaGateTest.kt`, `androidTest/…/data/ItemDaoTest.kt`,
   `MigrationTest.kt`
@@ -59,6 +61,7 @@ scripts in the last column — they are what tells you the strip is finished rat
 - `media/MediaFiles.kt`, `androidTest/…/media/MediaFilesTest.kt`, `res/xml/file_paths.xml` and the
   `FileProvider` in the manifest
 - Gradle: `coil.compose`, both `exifinterface` lines
+- The items editor's picker and its `item_pick_image` string, if the placeholder domain stays
 - `scripts/aab-permissions.py`: nothing to remove — the photo path declares no permission — but
   `CAMERA` stays in FORBIDDEN, because a dependency that merges it changes the listing.
 - The privacy policy's *Photos* and *camera* bullets, and `play-app-content.md`'s Data safety point 2.
@@ -68,6 +71,8 @@ scripts in the last column — they are what tells you the strip is finished rat
 
 - `data/backup/`, `ui/backup/`, `test/…/data/backup/`, `AppBackupAgent.kt` and its manifest
   attributes; `scripts/upgrade-diff.py`, which reads those backups
+- Settings' *Backup* row (`onOpenBackup`, the `Backup` route, `settings_backup`) and the `backup_*`
+  strings
 - If nothing else shares a file: `ui/common/Share.kt`, `ShareBook.kt` and `ShareBookTest.kt`,
   `androidTest/…/ui/common/ShareChosenCallbackTest.kt`, `MainActivity.onResume`'s
   `revokeUnpickedShare()`, `ManifestWiringTest`'s share case, the `ShareChosenReceiver` entry and the
@@ -91,9 +96,10 @@ the background schema check in `data/BackgroundSchemaGuard.kt` because other cod
 the reminders are gone.
 
 - `work/ReminderSweep.kt`, `BootReceiver.kt`, `PackageReplacedReceiver.kt`, `ReceiverWork.kt`,
-  `ExactAlarms.kt`, `ReminderChannels.kt` and its test; `NotificationPermission.kt` if nothing else
-  posts; `Autostart.kt`, `BatteryExemption.kt` and the `com.miui.securitycenter` `<queries>` entry if
-  nothing else runs in the background
+  `ExactAlarms.kt`, `ReminderChannels.kt`, its test and the `channel_reminders_*` strings;
+  `NotificationPermission.kt` if nothing else posts; `Autostart.kt`, `BatteryExemption.kt` and the
+  `com.miui.securitycenter` `<queries>` entry if nothing else runs in the background
+- `res/drawable/ic_notification.xml` and `res/raw/keep.xml`, if nothing else posts
 - `androidTest/…/ManifestWiringTest.kt`'s boot, update and boot-permission cases, or the whole file
   if the share case has gone with the backup
 - `app/proguard-rules.pro`'s *Workers, across versions* note; `.gitignore`'s `/doze-*/` and
@@ -115,7 +121,7 @@ the reminders are gone.
   half while anything else runs in the background.
 - **Settings' *Reminders* section, and the ask and banner behind it** — the `SwitchRow`, the
   `rememberNotificationPermissionAsk` call, the resumed re-read of `notificationsAllowed`, the
-  `WarningBanner` and its three `settings_reminders_blocked_*` strings, plus
+  `WarningBanner`, and every `settings_reminders*` string, plus
   `AppPreferences.remindersEnabled`, `Keys.REMINDERS_ENABLED` and its place in `Keys.SETTINGS`, and
   the reminder lines in `AppPreferencesTest`. That whole block is `PLAN.md` rule 4 worked through
   for one ask; it is the shape to copy for *your* first ask, so read it before deleting it.
@@ -125,9 +131,11 @@ the reminders are gone.
 
 ### The placeholder domain
 
-- `ui/items/`, the items routes in `Navigation.kt` / `NavigationKeys.kt`, the `tab_items` strings
+- `ui/items/`, the items routes in `Navigation.kt` / `NavigationKeys.kt`, and the `tab_items`,
+  `item_*`, `items_*`, `action_save`, `action_edit` and `action_delete` strings
 - `debug/…/data/SampleData.kt`, `debug/…/debug/SeedReceiver.kt`, the debug manifest's receiver, and
-  the seed rows in `DebugSettings.kt` — or keep the seeding seam and point it at your own data
+  the seed rows in `DebugSettings.kt` with their `debug_seed` and `debug_wipe` strings — or keep the
+  seeding seam and point it at your own data
 - **`scripts/edge-to-edge.py`'s SCENES**, `TAB_BAR`, `HOME_TAB` and `SEED_WALK`: they walk the
   template's screens. Rewrite them against yours the same week — until then the nightly job boots ten
   emulators to walk screens that do not exist and reports a red everyone learns to ignore.
