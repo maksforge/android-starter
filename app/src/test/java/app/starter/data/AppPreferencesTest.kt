@@ -54,6 +54,7 @@ class AppPreferencesTest {
                 setRemindersEnabled(true)
                 setOnboardingDone(true)
                 setBackupFolderUri("content://tree")
+                markTipAsked()
 
                 restoreDefaults()
 
@@ -62,6 +63,7 @@ class AppPreferencesTest {
                 assertFalse(remindersEnabled.first())
                 assertTrue(onboardingDone.first())
                 assertEquals("content://tree", backupFolderUri.first())
+                assertTrue(tipAsked.first())
             }
         }
 }
