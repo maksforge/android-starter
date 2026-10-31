@@ -156,4 +156,5 @@ import androidx.compose.ui.graphics.Color
             print("  %s %-48s %5.2f:1  (need %.1f)" % (flag, name, c, want), file=sys.stderr)
 
 
-main()
+if __name__ == "__main__":
+    main()
