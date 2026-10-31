@@ -75,7 +75,7 @@ There is no account and no sign-in. Would change: a feature behind a login.
 
 **The IARC questionnaire.** Answered _<date>_, category _<category>_, rating contact
 `<support email>` — the listing's address, so there is one address to keep alive, not two. Every
-question answered No gives Everyone (ESRB) and PEGI 3.
+question answered No gives Everyone (ESRB) and PEGI 3; the tip's one Yes, below, adds Brazil's 14+.
 
 The category is *All other app types* unless the app's purpose is something the questionnaire names.
 Not *Social or communication* for an app that only touches calls or messages: that category means
