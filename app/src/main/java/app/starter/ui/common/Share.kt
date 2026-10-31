@@ -53,15 +53,23 @@ fun Context.shareFiles(
     }
     val open = OpenShare(UUID.randomUUID().toString(), takers, uris)
     shares.opened(open)
+    startActivity(Intent.createChooser(send, title, shareChosenCallback(open.id, takers, uris)?.intentSender))
+}
+
+internal fun Context.shareChosenCallback(
+    shareId: String,
+    takers: List<String>,
+    uris: List<Uri>,
+): PendingIntent? {
     val onChosen =
         Intent(this, ShareChosenReceiver::class.java)
             .addFlags(Intent.FLAG_RECEIVER_FOREGROUND)
-            .putExtra(EXTRA_SHARE, open.id)
+            .putExtra(EXTRA_SHARE, shareId)
             .putStringArrayListExtra(EXTRA_TAKERS, ArrayList(takers))
             .putParcelableArrayListExtra(EXTRA_URIS, ArrayList<Uri>(uris))
-    val chosen =
-        PendingIntentCompat.getBroadcast(this, 0, onChosen, PendingIntent.FLAG_UPDATE_CURRENT, true)
-    startActivity(Intent.createChooser(send, title, chosen?.intentSender))
+    // One request code per share: with a shared one, every sheet's callback is the same PendingIntent
+    // and a newer share rewrites the extras an older sheet will send back.
+    return PendingIntentCompat.getBroadcast(this, shareId.hashCode(), onChosen, PendingIntent.FLAG_UPDATE_CURRENT, true)
 }
 
 private class OpenShare(
