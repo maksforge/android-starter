@@ -7,10 +7,12 @@ import android.app.backup.FullBackupDataOutput
 import android.os.Build
 import android.os.ParcelFileDescriptor
 import app.starter.data.APP_DATABASE_FILE
-import app.starter.data.backup.AUTO_BACKUP_BUDGET_BYTES
+import app.starter.data.backup.autoBackupBudget
 import app.starter.data.backup.autoBackupFileSet
 import app.starter.data.backup.checkpointDatabaseTo
 import app.starter.data.backup.clearAutoBackupMarker
+import app.starter.data.backup.installDatabase
+import app.starter.data.backup.mediaFilesIn
 import app.starter.data.backup.writeAutoBackupMarker
 import app.starter.data.backup.writeOverQuotaMarker
 import app.starter.media.MediaKind
@@ -45,34 +47,44 @@ class AppBackupAgent : BackupAgent() {
     /**
      * Back up the checkpointed database and as many thumbnails as fit, newest first.
      *
-     * Auto Backup has a per-app quota (25 MB at the time of writing) and drops the **whole** backup
-     * when it is exceeded, so the thumbnails are admitted under [AUTO_BACKUP_BUDGET_BYTES] rather than
+     * Auto Backup has a per-app quota and drops the **whole** backup when it is exceeded, so the
+     * thumbnails are admitted under a budget taken from the quota the transport reports rather than
      * all of them: a pile of old thumbnails must not take the database down with it. Full-size photos
      * go only on a device-to-device transfer, which has no quota. The in-app export is where
      * "everything" lives.
      *
      * The marker records the attempt for the Backup screen; [onQuotaExceeded] overwrites it when the
-     * set was rejected anyway.
+     * set was rejected anyway. A device-to-device transfer never reaches the Google account, so it
+     * leaves the marker alone.
      */
     override fun onFullBackup(data: FullBackupDataOutput) {
         val staged = File(filesDir, STAGING_PATH)
         try {
             val databaseFile = getDatabasePath(APP_DATABASE_FILE)
             if (databaseFile.isFile) checkpointDatabaseTo(databaseFile, staged)
+            val deviceToDeviceTransfer = data.isDeviceToDeviceTransfer()
             val set =
                 autoBackupFileSet(
                     stagedDatabase = staged,
-                    thumbnails = mediaFiles(MediaKind.Thumbnail),
-                    photos = mediaFiles(MediaKind.Photo),
-                    deviceToDeviceTransfer = data.isDeviceToDeviceTransfer(),
+                    thumbnails = mediaFilesIn(filesDir, MediaKind.Thumbnail),
+                    photos = mediaFilesIn(filesDir, MediaKind.Photo),
+                    deviceToDeviceTransfer = deviceToDeviceTransfer,
+                    budget = autoBackupBudget(data.quota),
                 )
             set.files.forEach { fullBackupFile(it, data) }
-            writeAutoBackupMarker(filesDir, Instant.now(), set.leftOutThumbnails)
+            if (!deviceToDeviceTransfer) writeAutoBackupMarker(filesDir, Instant.now(), set.leftOutThumbnails)
         } finally {
             // It exists for the duration of the `fullBackupFile` call above, which consumes the
             // bytes synchronously, so nothing is waiting on it afterwards.
             staged.delete()
         }
+    }
+
+    override fun onQuotaExceeded(
+        backupDataBytes: Long,
+        quotaBytes: Long,
+    ) {
+        writeOverQuotaMarker(filesDir)
     }
 
     /**
@@ -82,28 +94,13 @@ class AppBackupAgent : BackupAgent() {
      * straight over `databases/app.db` would be doing so in a process where Room may already have
      * opened it.
      */
-    override fun onQuotaExceeded(
-        backupDataBytes: Long,
-        quotaBytes: Long,
-    ) {
-        writeOverQuotaMarker(filesDir)
-    }
-
     override fun onRestoreFinished() {
         clearAutoBackupMarker(filesDir)
         val staged = File(filesDir, STAGING_PATH)
         if (!staged.isFile) return
-        val databaseFile = getDatabasePath(APP_DATABASE_FILE)
-        databaseFile.parentFile?.mkdirs()
-        // The sidecars belong to the database being replaced. Leaving a `-wal` behind next to a
-        // different `app.db` is a corrupt open on the next launch.
-        for (suffix in listOf("-wal", "-shm")) File(databaseFile.path + suffix).delete()
-        staged.copyTo(databaseFile, overwrite = true)
+        installDatabase(staged, getDatabasePath(APP_DATABASE_FILE))
         staged.delete()
     }
-
-    private fun mediaFiles(kind: MediaKind): List<File> =
-        File(filesDir, kind.directory).listFiles().orEmpty().filter { it.isFile }
 
     private fun FullBackupDataOutput.isDeviceToDeviceTransfer(): Boolean =
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && (transportFlags and FLAG_DEVICE_TO_DEVICE_TRANSFER) != 0

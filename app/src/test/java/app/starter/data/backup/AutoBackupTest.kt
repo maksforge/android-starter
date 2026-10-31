@@ -3,7 +3,6 @@ package app.starter.data.backup
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
-import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -23,13 +22,37 @@ class AutoBackupTest {
             setLastModified(modified)
         }
 
+    private val cost = AUTO_BACKUP_PER_FILE_OVERHEAD_BYTES + 10
+
     @Test
     fun `thumbnails are admitted under what the database leaves, skipping one too large`() {
         val big = file("big.jpg", 60)
         val small = file("small.jpg", 10)
-        val set = admitThumbnails(coreBytes = 30, newestFirst = listOf(big, small), budget = 50)
+        val set = admitThumbnails(coreBytes = cost, newestFirst = listOf(big, small), budget = 2 * cost)
         assertEquals(listOf(small), set.files)
         assertEquals(1, set.leftOutThumbnails)
+    }
+
+    @Test
+    fun `each file is charged its tar overhead, not only its bytes`() {
+        val database = file("app.db", 10)
+        val thumbnails = listOf(file("a.jpg", 10), file("b.jpg", 10))
+        val set =
+            autoBackupFileSet(
+                database,
+                thumbnails,
+                photos = emptyList(),
+                deviceToDeviceTransfer = false,
+                budget = 2 * cost,
+            )
+        assertEquals(2, set.files.size)
+        assertEquals(1, set.leftOutThumbnails)
+    }
+
+    @Test
+    fun `the budget is the transport's quota less the margin`() {
+        assertEquals(25L * 1024 * 1024 - AUTO_BACKUP_QUOTA_MARGIN_BYTES, autoBackupBudget(25L * 1024 * 1024))
+        assertEquals(0, autoBackupBudget(1))
     }
 
     @Test
@@ -43,7 +66,7 @@ class AutoBackupTest {
                 listOf(old, new),
                 photos = emptyList(),
                 deviceToDeviceTransfer = false,
-                budget = 25,
+                budget = 2 * cost,
             )
         assertEquals(listOf(database, new), set.files)
         assertEquals(1, set.leftOutThumbnails)
@@ -61,24 +84,33 @@ class AutoBackupTest {
     }
 
     @Test
-    fun `the marker round-trips, and an over-quota attempt replaces it`() {
+    fun `the marker round-trips, and an over-quota attempt keeps the last one that went through`() {
         val filesDir = folder.newFolder("files")
         assertNull(readAutoBackupMarker(filesDir))
 
-        writeAutoBackupMarker(filesDir, Instant.ofEpochMilli(1_700_000_000_000), leftOutThumbnails = 3)
-        assertEquals(
-            AutoBackupMarker(Instant.ofEpochMilli(1_700_000_000_000), 3, overQuota = false),
-            readAutoBackupMarker(filesDir),
-        )
+        val accepted = Instant.ofEpochMilli(1_700_000_000_000)
+        writeAutoBackupMarker(filesDir, accepted, leftOutThumbnails = 3)
+        assertEquals(AutoBackupMarker(accepted, 3, overQuota = false), readAutoBackupMarker(filesDir))
 
+        writeAutoBackupMarker(filesDir, Instant.ofEpochMilli(1_800_000_000_000), leftOutThumbnails = 0)
         writeOverQuotaMarker(filesDir)
-        val marker = readAutoBackupMarker(filesDir)!!
-        assertTrue(marker.overQuota)
-        assertNull(marker.lastBackupAt)
+        assertEquals(AutoBackupMarker(accepted, 0, overQuota = true), readAutoBackupMarker(filesDir))
+
+        writeAutoBackupMarker(filesDir, Instant.ofEpochMilli(1_900_000_000_000), leftOutThumbnails = 0)
+        writeOverQuotaMarker(filesDir)
+        assertEquals(AutoBackupMarker(accepted, 0, overQuota = true), readAutoBackupMarker(filesDir))
 
         clearAutoBackupMarker(filesDir)
         assertNull(readAutoBackupMarker(filesDir))
         assertFalse(File(filesDir, "$AUTO_BACKUP_MARKER_FILE.part").exists())
+    }
+
+    @Test
+    fun `an over-quota attempt with nothing earlier records no time`() {
+        val filesDir = folder.newFolder("files")
+        writeAutoBackupMarker(filesDir, Instant.ofEpochMilli(1_700_000_000_000), leftOutThumbnails = 0)
+        writeOverQuotaMarker(filesDir)
+        assertEquals(AutoBackupMarker(null, 0, overQuota = true), readAutoBackupMarker(filesDir))
     }
 
     @Test

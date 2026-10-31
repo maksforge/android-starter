@@ -10,15 +10,28 @@ import java.time.Instant
  */
 
 /**
- * Below the ~25 MB quota with room to spare, because Android rejects an over-quota dataset whole and
- * the database goes with it.
+ * Kept clear of the transport's quota, because Android rejects an over-quota dataset whole and the
+ * database goes with it. Covers what the per-file cost below does not: the backup's own manifest and
+ * metadata, and a database that grows between the measuring pass and the real one.
  */
-const val AUTO_BACKUP_BUDGET_BYTES: Long = 20L * 1024 * 1024
+const val AUTO_BACKUP_QUOTA_MARGIN_BYTES: Long = 2L * 1024 * 1024
+
+/**
+ * What a file costs in the backup's tar stream beyond its own bytes: a 512-byte header, padding to
+ * the next 512, and room for a long-path extended header.
+ */
+const val AUTO_BACKUP_PER_FILE_OVERHEAD_BYTES: Long = 2L * 1024
+
+/** The budget under [quotaBytes], the quota the transport reports it will enforce. */
+fun autoBackupBudget(quotaBytes: Long): Long = (quotaBytes - AUTO_BACKUP_QUOTA_MARGIN_BYTES).coerceAtLeast(0)
+
+private fun File.backupCost(): Long = length() + AUTO_BACKUP_PER_FILE_OVERHEAD_BYTES
 
 /** Relative to `filesDir`, and never itself backed up. */
 const val AUTO_BACKUP_MARKER_FILE = "auto-backup-marker.txt"
 
 private const val MARKER_LAST_BACKUP_KEY = "lastBackupAtEpochMilli"
+private const val MARKER_PREVIOUS_BACKUP_KEY = "previousBackupAtEpochMilli"
 private const val MARKER_LEFT_OUT_KEY = "leftOutThumbnails"
 private const val MARKER_OVER_QUOTA_KEY = "overQuota"
 
@@ -34,12 +47,12 @@ data class AutoBackupSet(
 fun admitThumbnails(
     coreBytes: Long,
     newestFirst: List<File>,
-    budget: Long = AUTO_BACKUP_BUDGET_BYTES,
+    budget: Long,
 ): AutoBackupSet {
     var remaining = (budget - coreBytes).coerceAtLeast(0)
     val admitted = mutableListOf<File>()
     for (file in newestFirst) {
-        val size = file.length()
+        val size = file.backupCost()
         if (size <= remaining) {
             admitted += file
             remaining -= size
@@ -57,30 +70,67 @@ fun autoBackupFileSet(
     thumbnails: List<File>,
     photos: List<File>,
     deviceToDeviceTransfer: Boolean,
-    budget: Long = AUTO_BACKUP_BUDGET_BYTES,
+    budget: Long,
 ): AutoBackupSet {
     val database = listOfNotNull(stagedDatabase.takeIf { it.isFile })
     if (deviceToDeviceTransfer) return AutoBackupSet(database + thumbnails + photos, leftOutThumbnails = 0)
     val newestFirst = thumbnails.sortedWith(compareByDescending<File> { it.lastModified() }.thenBy { it.name })
-    val admitted = admitThumbnails(database.sumOf { it.length() }, newestFirst, budget)
+    val admitted = admitThumbnails(database.sumOf { it.backupCost() }, newestFirst, budget)
     return AutoBackupSet(database + admitted.files, admitted.leftOutThumbnails)
 }
 
-/** What the last automatic backup attempt left behind; [overQuota] means Android rejected it whole. */
+/**
+ * What the last automatic backup attempt left behind. Android reports a quota rejection through
+ * `onQuotaExceeded` and no other transport failure at all, so [lastBackupAt] is the last attempt that
+ * was not refused, not a confirmed upload. When [overQuota], it is the one before the refusal, or
+ * null if none is recorded.
+ */
 data class AutoBackupMarker(
     val lastBackupAt: Instant?,
     val leftOutThumbnails: Int = 0,
     val overQuota: Boolean = false,
 )
 
+/** Carries the previous [AutoBackupMarker.lastBackupAt] along, for [writeOverQuotaMarker] to fall back to. */
 fun writeAutoBackupMarker(
     filesDir: File,
     at: Instant,
     leftOutThumbnails: Int,
-) = writeMarker(filesDir, "$MARKER_LAST_BACKUP_KEY=${at.toEpochMilli()}\n$MARKER_LEFT_OUT_KEY=$leftOutThumbnails\n")
+) {
+    val previous = readMarkerValues(filesDir)?.get(MARKER_LAST_BACKUP_KEY)
+    writeMarker(
+        filesDir,
+        buildString {
+            append("$MARKER_LAST_BACKUP_KEY=${at.toEpochMilli()}\n")
+            append("$MARKER_LEFT_OUT_KEY=$leftOutThumbnails\n")
+            if (previous != null) append("$MARKER_PREVIOUS_BACKUP_KEY=$previous\n")
+        },
+    )
+}
 
-/** Written over the marker [writeAutoBackupMarker] left moments before, from the same attempt. */
-fun writeOverQuotaMarker(filesDir: File) = writeMarker(filesDir, "$MARKER_OVER_QUOTA_KEY=true\n")
+/**
+ * Written over the marker [writeAutoBackupMarker] left moments before, from the same attempt's
+ * measuring pass. The refused set never reached the account, so the time shown becomes the one
+ * before it.
+ */
+fun writeOverQuotaMarker(filesDir: File) {
+    val values = readMarkerValues(filesDir).orEmpty()
+    val lastGood =
+        if (values[MARKER_OVER_QUOTA_KEY] ==
+            "true"
+        ) {
+            values[MARKER_LAST_BACKUP_KEY]
+        } else {
+            values[MARKER_PREVIOUS_BACKUP_KEY]
+        }
+    writeMarker(
+        filesDir,
+        buildString {
+            append("$MARKER_OVER_QUOTA_KEY=true\n")
+            if (lastGood != null) append("$MARKER_LAST_BACKUP_KEY=$lastGood\n")
+        },
+    )
+}
 
 fun clearAutoBackupMarker(filesDir: File) {
     File(filesDir, AUTO_BACKUP_MARKER_FILE).delete()
@@ -88,24 +138,27 @@ fun clearAutoBackupMarker(filesDir: File) {
 
 /** Null when absent or unreadable, which renders as "none recorded", never as a working backup. */
 fun readAutoBackupMarker(filesDir: File): AutoBackupMarker? {
+    val values = readMarkerValues(filesDir) ?: return null
+    val overQuota = values[MARKER_OVER_QUOTA_KEY] == "true"
+    val lastBackupAt = values[MARKER_LAST_BACKUP_KEY]?.toLongOrNull()?.let(Instant::ofEpochMilli)
+    if (lastBackupAt == null && !overQuota) return null
+    return AutoBackupMarker(
+        lastBackupAt = lastBackupAt,
+        leftOutThumbnails = if (overQuota) 0 else values[MARKER_LEFT_OUT_KEY]?.toIntOrNull()?.coerceAtLeast(0) ?: 0,
+        overQuota = overQuota,
+    )
+}
+
+private fun readMarkerValues(filesDir: File): Map<String, String>? {
     val marker = File(filesDir, AUTO_BACKUP_MARKER_FILE)
     if (!marker.isFile) return null
     return try {
-        val values =
-            marker
-                .readLines()
-                .mapNotNull { line ->
-                    val separator = line.indexOf('=')
-                    if (separator <= 0) null else line.substring(0, separator) to line.substring(separator + 1).trim()
-                }.toMap()
-        val overQuota = values[MARKER_OVER_QUOTA_KEY] == "true"
-        val lastBackupAt = values[MARKER_LAST_BACKUP_KEY]?.toLongOrNull()?.let(Instant::ofEpochMilli)
-        if (lastBackupAt == null && !overQuota) return null
-        AutoBackupMarker(
-            lastBackupAt = lastBackupAt,
-            leftOutThumbnails = values[MARKER_LEFT_OUT_KEY]?.toIntOrNull()?.coerceAtLeast(0) ?: 0,
-            overQuota = overQuota,
-        )
+        marker
+            .readLines()
+            .mapNotNull { line ->
+                val separator = line.indexOf('=')
+                if (separator <= 0) null else line.substring(0, separator) to line.substring(separator + 1).trim()
+            }.toMap()
     } catch (e: IOException) {
         null
     }
