@@ -7,8 +7,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -16,13 +20,17 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import app.starter.R
 import app.starter.theme.Spacing
@@ -143,19 +151,42 @@ fun WarningBanner(
 }
 
 /**
+ * The M3 switch with a check in its thumb while on, so on and off differ in shape as well as colour.
+ *
+ * `onCheckedChange = null` makes it display-only: the row around it carries the `toggleable`, so a
+ * screen reader announces one switch with its label instead of a row and a bare control.
+ */
+@Composable
+fun CheckSwitch(
+    checked: Boolean,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+) {
+    Switch(
+        checked = checked,
+        onCheckedChange = null,
+        enabled = enabled,
+        modifier = modifier,
+        thumbContent =
+            if (checked) {
+                { Icon(Icons.Filled.Check, contentDescription = null, Modifier.size(SwitchDefaults.IconSize)) }
+            } else {
+                null
+            },
+    )
+}
+
+/**
  * A title, a line of supporting text, and a switch — **and the whole row is the target**.
  *
- * A 48dp strip the width of the screen is far easier to hit than a 32dp control at the edge of it,
- * which is why this is a `Row` with a `clickable` on it rather than a `Switch` with a label beside
- * it. It lived privately inside Settings while Settings was the only caller; it is here because the
- * second caller is how the padding drifts (see [DetailScaffold]).
+ * A 48dp strip the width of the screen is far easier to hit than a 32dp control at the edge of it.
+ * The row is one `toggleable` with `Role.Switch`, so TalkBack reads a single labelled switch rather
+ * than a clickable row followed by a second, unlabelled control.
  *
- * **`enabled = false` draws the row inert rather than hiding it**, which is the part worth keeping.
- * A control the app cannot honour on this particular phone — a feature the ROM refuses, a toggle
- * that needs hardware this device lacks — leaves the user unable to tell the app from an app that
- * behaves differently on their phone than on someone else's. It disables the row's own `clickable`
- * as well as the switch: a row that still took taps and did nothing would be worse than one that
- * says no.
+ * **`enabled = false` draws the row inert rather than hiding it.** A control the app cannot honour
+ * on this particular phone — a feature the ROM refuses, a toggle that needs hardware this device
+ * lacks — leaves the user unable to tell the app from an app that behaves differently on their phone
+ * than on someone else's.
  */
 @Composable
 fun SwitchRow(
@@ -170,19 +201,74 @@ fun SwitchRow(
         modifier =
             modifier
                 .fillMaxWidth()
-                .clickable(enabled = enabled) { onChange(!checked) }
+                .toggleable(value = checked, enabled = enabled, role = Role.Switch, onValueChange = onChange)
                 .padding(horizontal = Spacing.base, vertical = Spacing.snug),
+        horizontalArrangement = Arrangement.spacedBy(Spacing.base),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(title, style = MaterialTheme.typography.bodyLarge)
+        RowText(title, subtitle, Modifier.weight(1f))
+        CheckSwitch(checked = checked, enabled = enabled)
+    }
+}
+
+/** Where a [LinkRow] goes, which decides its trailing icon. */
+enum class LinkTarget {
+    /** Another screen of this app: a chevron. */
+    Inside,
+
+    /** Another app or a system screen: "open in new". */
+    Outside,
+}
+
+/**
+ * A row that goes somewhere.
+ *
+ * A row that **leaves** the app — a mail composer, the Play listing, a system settings page — takes
+ * [LinkTarget.Outside] and a subtitle saying where, because a tap that hands the user to another app
+ * with no warning is the kind they back out of and never repeat.
+ */
+@Composable
+fun LinkRow(
+    title: String,
+    target: LinkTarget,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    subtitle: String? = null,
+) {
+    Row(
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .clickable(onClick = onClick)
+                .padding(horizontal = Spacing.base, vertical = Spacing.snug),
+        horizontalArrangement = Arrangement.spacedBy(Spacing.base),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        RowText(title, subtitle, Modifier.weight(1f))
+        val icon =
+            when (target) {
+                LinkTarget.Inside -> rememberVectorPainter(Icons.AutoMirrored.Filled.KeyboardArrowRight)
+                LinkTarget.Outside -> painterResource(R.drawable.ic_open_in_new)
+            }
+        Icon(painter = icon, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
+
+@Composable
+private fun RowText(
+    title: String,
+    subtitle: String?,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(Spacing.hair)) {
+        Text(title, style = MaterialTheme.typography.bodyLarge)
+        if (subtitle != null) {
             Text(
                 text = subtitle,
-                style = MaterialTheme.typography.bodySmall,
+                style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
-        Switch(checked = checked, onCheckedChange = onChange, enabled = enabled)
     }
 }
 
