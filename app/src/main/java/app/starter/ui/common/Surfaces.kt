@@ -218,6 +218,9 @@ enum class LinkTarget {
 
     /** Another app or a system screen: "open in new". */
     Outside,
+
+    /** Nowhere: an action done on this screen, at most behind a dialog. No icon. */
+    Here,
 }
 
 /**
@@ -249,8 +252,11 @@ fun LinkRow(
             when (target) {
                 LinkTarget.Inside -> rememberVectorPainter(Icons.AutoMirrored.Filled.KeyboardArrowRight)
                 LinkTarget.Outside -> painterResource(R.drawable.ic_open_in_new)
+                LinkTarget.Here -> null
             }
-        Icon(painter = icon, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+        if (icon != null) {
+            Icon(painter = icon, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
     }
 }
 
