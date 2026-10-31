@@ -2,11 +2,9 @@ package app.starter.ui.wipe
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,7 +26,10 @@ import app.starter.theme.Spacing
  *   someone's history on a path where nothing was going to destroy it.
  *
  * Rendering the same screen with a button that is sometimes destructive and sometimes not is how a
- * release build ends up wiping a user's data. The flag decides whether the button exists.
+ * release build ends up wiping a user's data. The flag decides whether the button shows;
+ * [SchemaMismatchContinue], one file per variant, keeps it and its string out of a release binary
+ * altogether. Both are needed: `-PreleaseShapedDebug` compiles the debug source set without the
+ * destructive fallback, where continuing would throw.
  *
  * ⚠️ This screen is the one nobody sees in testing, because every migration test opens the database
  * directly and walks straight past the gate that shows it. Verify an upgrade on a phone.
@@ -66,13 +67,6 @@ fun SchemaMismatchScreen(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(top = Spacing.base),
         )
-        if (mismatch.wipeOnConsent) {
-            Button(
-                onClick = onContinue,
-                modifier = Modifier.fillMaxWidth().padding(top = Spacing.section),
-            ) {
-                Text(stringResource(R.string.schema_mismatch_continue))
-            }
-        }
+        if (mismatch.wipeOnConsent) SchemaMismatchContinue(onContinue)
     }
 }

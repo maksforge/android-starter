@@ -77,5 +77,4 @@
     <string name="schema_mismatch_title">Te dane zapisała inna wersja</string>
     <string name="schema_mismatch_body">Dane na tym telefonie zapisano w wersji %1$d, a ta kompilacja odczytuje wersję %2$d.</string>
     <string name="schema_mismatch_copy">Kopia została zachowana jako %1$s. Nic nie zostało usunięte.</string>
-    <string name="schema_mismatch_continue">Kontynuuj i zacznij od nowa</string>
 </resources>

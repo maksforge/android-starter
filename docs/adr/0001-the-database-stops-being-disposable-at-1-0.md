@@ -57,6 +57,8 @@ A completely green migration suite says nothing about whether a real upgrade is 
 - A schema bump owes five things, listed in `docs/DOD.md`. Three are enforced mechanically by
   `scripts/schema-gate.py`; the other two are yours.
 - The consent screen and the refusal screen are the same composable with a flag, and the flag decides
-  whether the destructive button exists at all. Rendering one button that is sometimes destructive is
-  how a release build ends up wiping someone's data.
+  whether the destructive button shows. Rendering one button that is sometimes destructive is how a
+  release build ends up wiping someone's data. The button itself is `ui/wipe/SchemaMismatchContinue.kt`,
+  one file per variant, so a release binary carries neither it nor its string; the flag is still
+  needed because `-PreleaseShapedDebug` compiles the debug half without the destructive fallback.
 - `preserved/` is never pruned. It is small and it is the last copy.

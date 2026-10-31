@@ -119,8 +119,9 @@ app/src/main/java/<namespace>/
   work/        WorkManager, receivers, notification channels, permission asks
 
 app/src/debug/    the developer-only build: the sample-data seeder, Settings' debug section and its
-                  strings, and SeedReceiver for the capture driver
-app/src/release/  only the no-op half of that seam, so main/ can call it unconditionally
+                  strings, the schema-mismatch screen's continue button, and SeedReceiver for the
+                  capture driver
+app/src/release/  only the no-op half of each seam, so main/ can call it unconditionally
 scripts/          the Python toolchain. project.py is the one place the app's identity lives
 art/             mark.py is the identity; both generators derive from it
 ```

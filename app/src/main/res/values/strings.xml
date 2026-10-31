@@ -107,5 +107,4 @@
     <string name="schema_mismatch_title">This data was saved by a different version</string>
     <string name="schema_mismatch_body">The data on this phone was saved at version %1$d, and this build reads version %2$d.</string>
     <string name="schema_mismatch_copy">A copy has been kept as %1$s. Nothing has been deleted.</string>
-    <string name="schema_mismatch_continue">Continue and start fresh</string>
 </resources>
