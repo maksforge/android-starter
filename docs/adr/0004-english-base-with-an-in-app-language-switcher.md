@@ -59,3 +59,9 @@ gate does not.
   `fetch-depth: 0`.
 - Language names in the switcher are **endonyms** — each language named in its own language, in every
   locale — so someone who has landed somewhere they cannot read finds their way out.
+- **Below Android 13 the chosen language reaches activities only.** AppCompat applies it in an
+  activity's `attachBaseContext`, so a notification, a channel name or any other string a worker,
+  receiver or service builds from the application context follows the phone's language there. Code
+  outside an activity takes its strings from `context.inAppLanguage()` (`ui/settings/AppLanguage.kt`),
+  which reads the stored choice itself because a process the OS started for a worker never loaded
+  AppCompat's copy. From 13 the platform applies the choice to every context and the call is a no-op.
