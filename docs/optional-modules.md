@@ -40,7 +40,8 @@ scripts in the last column — they are what tells you the strip is finished rat
 
 - `data/AppDatabase.kt`, `ItemDao.kt`, `ItemEntity.kt`, `ItemRepository.kt`, `Converters.kt`,
   `Migrations.kt`, `SchemaGate.kt`, `DatabasePreserve.kt`
-- `work/SchemaGuard.kt`, `ui/wipe/SchemaMismatchScreen.kt`, the wipe guard's call in `MainApplication`
+- `work/SchemaGuard.kt`, `ui/wipe/SchemaMismatchScreen.kt`, both variants'
+  `ui/wipe/SchemaMismatchContinue.kt` and its debug string, the wipe guard's call in `MainApplication`
 - `app/schemas/`, `test/…/data/SchemaGateTest.kt`, `androidTest/…/data/ItemDaoTest.kt`,
   `MigrationTest.kt`
 - Gradle: the `ksp` plugin and `ksp {}` block, the three Room dependencies, `room.testing`, and the
@@ -66,6 +67,9 @@ scripts in the last column — they are what tells you the strip is finished rat
 
 - `data/backup/`, `ui/backup/`, `test/…/data/backup/`, `AppBackupAgent.kt` and its manifest
   attributes; `scripts/upgrade-diff.py`, which reads those backups
+- If nothing else shares a file: `ui/common/Share.kt`, `ShareBook.kt` and `ShareBookTest.kt`,
+  `MainActivity.onResume`'s `revokeUnpickedShare()`, the `ShareChosenReceiver` entry and the two
+  `SEND` entries in the manifest's `<queries>`, and the privacy policy's sentences on sharing
 - `kotlinx.serialization` **stays**: Navigation 3 serialises every `NavKey`.
 - **Platform Auto Backup takes over**, with `android:dataExtractionRules` if anything must stay on
   the phone. ⚠ **Every DataStore key is then backed up, whether you meant it to be or not** —
