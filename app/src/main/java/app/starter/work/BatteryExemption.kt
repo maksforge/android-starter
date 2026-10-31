@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.PowerManager
 import android.provider.Settings
 import androidx.core.net.toUri
+import app.starter.ui.common.startActivitySafely
 
 /**
  * Whether Android currently exempts this app from battery optimisation.

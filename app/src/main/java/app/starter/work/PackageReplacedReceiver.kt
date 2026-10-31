@@ -9,7 +9,7 @@ import android.content.Intent
  *
  * **Why an update needs its own entry point.** A schema-bumping update leaves the database at the
  * old version until something opens it, and every background entry point correctly declines to work
- * over a version it cannot open ([schemaBlocksBackgroundWork]). Without this receiver the first
+ * over a version it cannot open (`schemaBlocksBackgroundWork`). Without this receiver the first
  * reminder after an update goes unposted and nothing recovers until the user opens the app by hand.
  *
  * It only *enqueues*: the migrating happens inside the worker, which has minutes where a receiver
