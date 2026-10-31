@@ -558,15 +558,36 @@ def read_insets() -> dict[str, Rect]:
     the largest is taken. An invisible source contributes nothing — a hidden navigation bar is not
     an area anything can be wrongly drawn under.
     """
-    dump = shell("dumpsys window displays")
     found: dict[str, Rect] = {}
-    for match in INSET_RE.finditer(dump):
+    for match in INSET_RE.finditer(shell("dumpsys window displays")):
         kind, left, top, right, bottom, visible = match.groups()
         kind = LEGACY_INSET_TYPES.get(kind, kind)
         if kind not in INSET_TYPES or visible != "true":
             continue
         rect = Rect(int(left), int(top), int(right), int(bottom))
         if kind not in found or rect.area > found[kind].area:
+            found[kind] = rect
+    return found or read_bar_windows()
+
+
+# API 26 prints no `InsetsSource` line, and API 29 prints them under names (`TYPE_TOP_BAR`) the map
+# above does not know. The bars are still windows of their own (`NavigationBar0` from API 30 on), with
+# a frame and a shown-or-not surface: the same rectangle and visibility, read one level down.
+BAR_WINDOWS = {"StatusBar": "statusBars", "NavigationBar": "navigationBars"}
+BAR_WINDOW_RE = re.compile(r"Window #\d+ Window\{[^}]* u0 (StatusBar|NavigationBar)\d*\}:")
+MFRAME_RE = re.compile(r"mFrame=\[(-?\d+),(-?\d+)\]\[(-?\d+),(-?\d+)\]")
+
+
+def read_bar_windows() -> dict[str, Rect]:
+    found: dict[str, Rect] = {}
+    for block in shell("dumpsys window windows").split("  Window #")[1:]:
+        title = BAR_WINDOW_RE.match("Window #" + block)
+        kind = BAR_WINDOWS.get(title.group(1)) if title else None
+        frame = MFRAME_RE.search(block)
+        if kind is None or frame is None or "Surface: shown=true" not in block:
+            continue
+        rect = Rect(*(int(v) for v in frame.groups()))
+        if rect.area > 0:
             found[kind] = rect
     return found
 
@@ -1679,6 +1700,12 @@ def run_scene(scene: Scene, config: Config, out_dir: Path, retries: int = 0) -> 
     shot.write_bytes(adb("exec-out", "screencap", "-p", binary=True))
 
     insets = read_insets()
+    # A missing bar is the driver or the device failing to show it; without this the scene passes for
+    # having been checked against less than the screen, as CI's bar-less emulators did for weeks.
+    missing = [kind for kind in ("statusBars", "navigationBars") if kind not in insets]
+    if missing:
+        error = f"no {' or '.join(missing)} inset could be read"
+        return {"scene": scene.name, "family": scene.family, "error": error}
     findings = check(dump_ui(), insets)
     result = {
         "scene": scene.name,
