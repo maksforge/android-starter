@@ -1,4 +1,4 @@
-name: Publish to Play
+name: Publish to Play (internal)
 
 # release-please tags the repo and publishes a GitHub Release when its release PR is
 # merged, and that publish is this workflow's trigger. So a build reaches Play only once
@@ -35,6 +35,18 @@ jobs:
           # *signed* bundle. aab-version.py below would catch it; the point is to not build
           # it at all.
           fetch-depth: 0
+
+      # A manual run on a branch builds that branch and puts it on the internal track as if it were a
+      # release — a build with no tag, no CHANGELOG entry and no notes behind it.
+      - name: Check the release exists
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name || github.ref_name }}
+        run: |
+          if ! gh release view "${TAG}" > /dev/null; then
+            echo "::error::No GitHub release named '${TAG}'. A manual run must pick the release tag in the Run workflow dialog, not a branch."
+            exit 1
+          fi
 
       - name: Set up JDK 21
         uses: actions/setup-java@v5
