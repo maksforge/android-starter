@@ -107,9 +107,14 @@ def parse(text: str, version: str | None) -> tuple[str, dict[str, str]]:
     ]
     if not versions:
         sys.exit("no '### <version>' subsection under Release notes")
+    # Refused rather than sorted: "newest" is the last heading here and in notes-gate.py, so one
+    # written above its predecessor would upload the older notes — which an app built from this
+    # template did, writing 0.12.0 above 0.11.0.
+    numbers = [tuple(int(part) for part in v.split(".")) for v, _ in versions]
+    for (earlier, _), (later, _), a, b in zip(versions, versions[1:], numbers, numbers[1:]):
+        if b <= a:
+            sys.exit(f"release notes out of order: ### {later} comes after ### {earlier}; write newest last")
     if version is None:
-        # Last wins: the file is written newest-last, and the newest is what anyone rendering this
-        # is about to upload.
         chosen, at = versions[-1]
     else:
         match = [(v, i) for v, i in versions if v == version]
@@ -175,7 +180,8 @@ def main() -> int:
     if args.dir:
         args.dir.mkdir(parents=True, exist_ok=True)
         for locale, body in notes.items():
-            (args.dir / f"whatsnew-{locale}").write_text(body + "\n", encoding="utf-8")
+            # No trailing newline: Play counts it against the limit.
+            (args.dir / f"whatsnew-{locale}").write_text(body, encoding="utf-8")
         print(f"-- wrote {len(notes)} files to {args.dir}", file=sys.stderr)
 
     for problem in problems:
