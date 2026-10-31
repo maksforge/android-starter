@@ -172,7 +172,8 @@ are marked.
 - `ui/items/`, the items routes in `Navigation.kt` / `NavigationKeys.kt`, and the `tab_items`,
   `item_*`, `items_*`, `action_save`, `action_edit` and `action_delete` strings
 - ⚠ **The tip's one ask lives on the items screen** and counts items as its measure of use. Move
-  `TipAskCard` to your home screen and give `tipAskDue` your own measure, or the ask goes with it
+  `TipAskCard.kt` and its `items_tip_ask_*` strings to your home screen and give `tipAskDue` your own
+  measure, or the ask goes with them
 - `debug/…/data/SampleData.kt`, `debug/…/debug/SeedReceiver.kt`, the debug manifest's receiver, and
   the seed rows in `DebugSettings.kt` with their `debug_seed` and `debug_wipe` strings — or keep the
   seeding seam and point it at your own data
