@@ -397,6 +397,13 @@ And a fourth for the first run: **`dry_run` defaults to true**, which passes `--
 Play validates the whole edit and discards it. Nothing publishes, nothing is sent for review. Untick
 it when you mean it.
 
+⚠ **A new app's production track targets no countries, and the API cannot fix that.** The first
+committed production run of the first app built from this template uploaded every listing,
+screenshot and changelog, then failed at the commit with `Release in track targeting no countries`.
+Play discards a failed edit whole, so nothing went live. The fix is one-time and Console-only:
+*Test and release → Production → Countries / regions → Add countries / regions*. **A dry run does
+not catch it** — tick the countries before the first real run.
+
 ### It promotes; it does not build
 
 The artifact that reaches production is the **exact one `publish-play.yml` already put on the
