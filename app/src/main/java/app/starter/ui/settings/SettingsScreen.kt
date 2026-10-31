@@ -217,7 +217,7 @@ private fun RestoreDefaultsRow(onRestore: () -> Unit) {
     LinkRow(
         title = stringResource(R.string.settings_restore),
         subtitle = stringResource(R.string.settings_restore_hint),
-        target = LinkTarget.Inside,
+        target = LinkTarget.Here,
         onClick = { confirming = true },
     )
 
