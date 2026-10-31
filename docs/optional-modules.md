@@ -137,7 +137,8 @@ the reminders are gone.
 - `tip/`, `test/…/tip/`, `ui/support/SupportViewModel.kt` and the tip section in `SupportScreen.kt`
 - The one-time ask: `TipAskCard` and `ItemsScreen`'s `onOpenSupport` parameter in `ui/items/`, the
   `onOpenSupport` the `Items` entry passes in `Navigation.kt`, `showTipAsk` and `answerTipAsk` in
-  `ItemsViewModel`, and `AppPreferences.tipAsked` / `markTipAsked`
+  `ItemsViewModel`, `AppPreferences.tipAsked` / `markTipAsked`, `Keys.TIP_ASKED` and its place in
+  `Keys.KEPT`, and the tip lines in `AppPreferencesTest`
 - `AppContainer.tipJar` and `installedAt`; `settleTipsOnEveryForeground` in `MainApplication`
 - The `items_tip_ask_*` and `support_tip*` strings, in every language
 - Gradle: `billing.ktx`, `androidx.lifecycle.process`, and licensee's `allowUrl` for Google's terms
