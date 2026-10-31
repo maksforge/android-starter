@@ -4,11 +4,18 @@ import android.app.backup.BackupAgent
 import android.app.backup.BackupDataInput
 import android.app.backup.BackupDataOutput
 import android.app.backup.FullBackupDataOutput
+import android.os.Build
 import android.os.ParcelFileDescriptor
 import app.starter.data.APP_DATABASE_FILE
+import app.starter.data.backup.AUTO_BACKUP_BUDGET_BYTES
+import app.starter.data.backup.autoBackupFileSet
 import app.starter.data.backup.checkpointDatabaseTo
+import app.starter.data.backup.clearAutoBackupMarker
+import app.starter.data.backup.writeAutoBackupMarker
+import app.starter.data.backup.writeOverQuotaMarker
 import app.starter.media.MediaKind
 import java.io.File
+import java.time.Instant
 
 /** Where the checkpointed copy is staged, relative to `filesDir`. */
 private const val STAGING_PATH = "auto-backup-staged.db"
@@ -36,24 +43,31 @@ private const val STAGING_PATH = "auto-backup-staged.db"
  */
 class AppBackupAgent : BackupAgent() {
     /**
-     * Back up the checkpointed database and the small media.
+     * Back up the checkpointed database and as many thumbnails as fit, newest first.
      *
-     * Full-size photos are deliberately left out: Auto Backup has a per-app quota (25 MB at the time
-     * of writing) and silently drops the whole backup when it is exceeded — so including photos
-     * would be trading a reliable small backup for an unreliable large one. The in-app export is
-     * where "everything" lives.
+     * Auto Backup has a per-app quota (25 MB at the time of writing) and drops the **whole** backup
+     * when it is exceeded, so the thumbnails are admitted under [AUTO_BACKUP_BUDGET_BYTES] rather than
+     * all of them: a pile of old thumbnails must not take the database down with it. Full-size photos
+     * go only on a device-to-device transfer, which has no quota. The in-app export is where
+     * "everything" lives.
+     *
+     * The marker records the attempt for the Backup screen; [onQuotaExceeded] overwrites it when the
+     * set was rejected anyway.
      */
     override fun onFullBackup(data: FullBackupDataOutput) {
         val staged = File(filesDir, STAGING_PATH)
         try {
             val databaseFile = getDatabasePath(APP_DATABASE_FILE)
-            if (databaseFile.isFile) {
-                checkpointDatabaseTo(databaseFile, staged)
-                fullBackupFile(staged, data)
-            }
-            for (file in File(filesDir, MediaKind.Thumbnail.directory).listFiles().orEmpty()) {
-                if (file.isFile) fullBackupFile(file, data)
-            }
+            if (databaseFile.isFile) checkpointDatabaseTo(databaseFile, staged)
+            val set =
+                autoBackupFileSet(
+                    stagedDatabase = staged,
+                    thumbnails = mediaFiles(MediaKind.Thumbnail),
+                    photos = mediaFiles(MediaKind.Photo),
+                    deviceToDeviceTransfer = data.isDeviceToDeviceTransfer(),
+                )
+            set.files.forEach { fullBackupFile(it, data) }
+            writeAutoBackupMarker(filesDir, Instant.now(), set.leftOutThumbnails)
         } finally {
             // It exists for the duration of the `fullBackupFile` call above, which consumes the
             // bytes synchronously, so nothing is waiting on it afterwards.
@@ -68,7 +82,15 @@ class AppBackupAgent : BackupAgent() {
      * straight over `databases/app.db` would be doing so in a process where Room may already have
      * opened it.
      */
+    override fun onQuotaExceeded(
+        backupDataBytes: Long,
+        quotaBytes: Long,
+    ) {
+        writeOverQuotaMarker(filesDir)
+    }
+
     override fun onRestoreFinished() {
+        clearAutoBackupMarker(filesDir)
         val staged = File(filesDir, STAGING_PATH)
         if (!staged.isFile) return
         val databaseFile = getDatabasePath(APP_DATABASE_FILE)
@@ -79,6 +101,12 @@ class AppBackupAgent : BackupAgent() {
         staged.copyTo(databaseFile, overwrite = true)
         staged.delete()
     }
+
+    private fun mediaFiles(kind: MediaKind): List<File> =
+        File(filesDir, kind.directory).listFiles().orEmpty().filter { it.isFile }
+
+    private fun FullBackupDataOutput.isDeviceToDeviceTransfer(): Boolean =
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && (transportFlags and FLAG_DEVICE_TO_DEVICE_TRANSFER) != 0
 
     /** Key/value backup. Never called while `fullBackupOnly="true"`, and a no-op if it ever is. */
     override fun onBackup(
