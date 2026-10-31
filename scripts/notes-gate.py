@@ -226,6 +226,8 @@ def main() -> int:
     versions = notes_versions(text)
     if not versions:
         sys.exit(f"no '### <version>' subsection under Release notes in {LISTING.relative_to(ROOT)}")
+    module = whatsnew()
+    module.require_order(versions)
     newest = versions[-1]
 
     # Ahead is the pre-bump window and is allowed; behind is the failure this gate exists for. See
@@ -252,7 +254,6 @@ def main() -> int:
     # cannot ship is worth finding on the branch that wrote it rather than on the release PR.
     # play-whatsnew already enforces both halves, so failing here means the notes exist but could
     # not ship.
-    module = whatsnew()
     _, notes = module.parse(text, newest)
     shipped = module.shipped_locales()
     missing = sorted(shipped - notes.keys())

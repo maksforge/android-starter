@@ -85,6 +85,19 @@ def shipped_locales() -> set[str]:
     return found
 
 
+def require_order(versions: list[str]) -> None:
+    """Exit unless every version heading is newer than the one above it.
+
+    Refused rather than sorted: "newest" is the last heading here and in notes-gate.py, so one
+    written above its predecessor would upload the older notes — which an app built from this
+    template did, writing 0.12.0 above 0.11.0.
+    """
+    numbers = [tuple(int(part) for part in v.split(".")) for v in versions]
+    for earlier, later, a, b in zip(versions, versions[1:], numbers, numbers[1:]):
+        if b <= a:
+            sys.exit(f"release notes out of order: ### {later} comes after ### {earlier}; write newest last")
+
+
 def parse(text: str, version: str | None) -> tuple[str, dict[str, str]]:
     """Pull the fenced note bodies out of the Release notes section of the listing document.
 
@@ -107,13 +120,7 @@ def parse(text: str, version: str | None) -> tuple[str, dict[str, str]]:
     ]
     if not versions:
         sys.exit("no '### <version>' subsection under Release notes")
-    # Refused rather than sorted: "newest" is the last heading here and in notes-gate.py, so one
-    # written above its predecessor would upload the older notes — which an app built from this
-    # template did, writing 0.12.0 above 0.11.0.
-    numbers = [tuple(int(part) for part in v.split(".")) for v, _ in versions]
-    for (earlier, _), (later, _), a, b in zip(versions, versions[1:], numbers, numbers[1:]):
-        if b <= a:
-            sys.exit(f"release notes out of order: ### {later} comes after ### {earlier}; write newest last")
+    require_order([v for v, _ in versions])
     if version is None:
         chosen, at = versions[-1]
     else:
