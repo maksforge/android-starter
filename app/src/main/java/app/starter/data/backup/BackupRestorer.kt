@@ -3,10 +3,20 @@ package app.starter.data.backup
 import app.starter.data.APP_SCHEMA_VERSION
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.InputStream
 import java.util.zip.ZipInputStream
+
+private const val PART_SUFFIX = ".part"
+
+/**
+ * One export or restore at a time, across the process. A screen's busy flag cannot be the guard: a
+ * screen left and opened again gets a new ViewModel while the old one's work may still be running,
+ * and a restore swapping files under a running export ships an archive that is half of each.
+ */
+val backupLock = Mutex()
 
 /** What a restore did, or why it did not. */
 sealed interface RestoreResult {
@@ -70,9 +80,10 @@ class BackupRestorer(
                 val stagedDatabase = File(stagingDir, DATABASE_ENTRY)
                 if (stagedDatabase.isFile) {
                     databaseFile.parentFile?.mkdirs()
-                    // The sidecars first, and before the copy: see the class KDoc.
+                    val part = stagedDatabase.copyTo(File(databaseFile.path + PART_SUFFIX), overwrite = true)
+                    // The sidecars after the slow copy and before the rename: see the class KDoc.
                     for (suffix in listOf("-wal", "-shm")) File(databaseFile.path + suffix).delete()
-                    stagedDatabase.copyTo(databaseFile, overwrite = true)
+                    part.moveOver(databaseFile)
                 }
 
                 for (directory in stagingDir.listFiles().orEmpty()) {
@@ -83,7 +94,8 @@ class BackupRestorer(
                         // Merge rather than replace: media filenames are UUIDs, so a name collision
                         // means the same file, and keeping files the archive does not mention costs
                         // disk where deleting them costs someone their photos.
-                        file.copyTo(File(target, file.name), overwrite = true)
+                        val live = File(target, file.name)
+                        file.copyTo(File(live.path + PART_SUFFIX), overwrite = true).moveOver(live)
                     }
                 }
                 RestoreResult.Restored(manifest.schemaVersion)
@@ -91,6 +103,17 @@ class BackupRestorer(
                 stagingDir.deleteRecursively()
             }
         }
+
+    /**
+     * A rename within one directory, so a kill mid-restore leaves either the old file or the new one
+     * whole beside a stray `.part`, never a truncated live file. A copy, not a rename, is what was slow.
+     */
+    private fun File.moveOver(target: File) {
+        if (!renameTo(target)) {
+            copyTo(target, overwrite = true)
+            delete()
+        }
+    }
 
     private fun readManifest(source: () -> InputStream): BackupManifest? =
         runCatching {

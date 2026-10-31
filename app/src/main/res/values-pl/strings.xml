@@ -74,6 +74,15 @@
     <string name="backup_export_records">Eksportuj dane</string>
     <string name="backup_export_everything">Eksportuj wszystko</string>
     <string name="backup_restore">Przywróć z pliku…</string>
+    <string name="backup_auto_last">Android ostatnio utworzył kopię zapasową aplikacji %1$s.</string>
+    <string name="backup_auto_none">Android nie utworzył jeszcze kopii zapasowej aplikacji.</string>
+    <string name="backup_auto_over_quota">Ostatnia automatyczna kopia zapasowa Androida została odrzucona jako zbyt duża, więc nie zawiera nic z tej aplikacji. Wyeksportuj kopię samodzielnie.</string>
+    <plurals name="backup_auto_left_out">
+        <item quantity="one">%d starsza miniatura nie zmieściła się i została pominięta.</item>
+        <item quantity="few">%d starsze miniatury nie zmieściły się i zostały pominięte.</item>
+        <item quantity="many">%d starszych miniatur nie zmieściło się i zostało pominiętych.</item>
+        <item quantity="other">%d starszej miniatury nie zmieściło się i zostało pominiętych.</item>
+    </plurals>
 
     <string name="licence_text_missing">Treść tej licencji nie jest dołączona do aplikacji.</string>
 

@@ -53,8 +53,16 @@ system — for a feature the platform already provides.
 
 ## Consequences
 
+- "The small media" is bounded, not assumed small: thumbnails go newest first under a 20 MiB budget
+  (`data/backup/AutoBackup.kt`), so enough of them can never push the set over the quota and take the
+  database with it. A device-to-device transfer has no quota and carries every thumbnail and photo.
+- Each attempt leaves a marker, and `onQuotaExceeded` overwrites it, so the Backup screen can say
+  when Android last backed up, how many thumbnails were left out, or that the whole set was refused.
 - The export is written to a `.part` and renamed on success, so an interrupted export leaves no file
-  that looks shareable and is not.
+  that looks shareable and is not. A restore writes each live file the same way, so a kill mid-swap
+  leaves the old file or the new one whole, never half of one.
+- Exports and restores share one process-wide lock, and Back is held while a restore runs: leaving
+  the screen would not stop it, only hide it.
 - A restore **deletes the `-wal` and `-shm` sidecars** before copying the new database in. Leaving a
   log belonging to a database that no longer exists is a corrupt open on next launch.
 - The restorer guards against **zip slip** — an entry named `../../databases/other.db`. The archive

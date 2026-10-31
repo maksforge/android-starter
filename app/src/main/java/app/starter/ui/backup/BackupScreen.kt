@@ -1,5 +1,6 @@
 package app.starter.ui.backup
 
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
@@ -15,15 +16,20 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import app.starter.R
+import app.starter.data.backup.AutoBackupMarker
 import app.starter.data.backup.BackupScope
 import app.starter.theme.Spacing
 import app.starter.ui.appViewModelExtras
 import app.starter.ui.common.DetailScaffold
 import app.starter.ui.common.shareFiles
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 
 @Composable
 fun BackupScreen(
@@ -49,9 +55,11 @@ fun BackupScreen(
         }
     }
 
+    BackHandler(enabled = state.restoring) {}
+
     DetailScaffold(
         title = stringResource(R.string.settings_backup),
-        onBack = onBack,
+        onBack = onBack.takeUnless { state.restoring },
         modifier = modifier,
     ) { contentModifier ->
         Column(modifier = contentModifier.padding(Spacing.base)) {
@@ -60,6 +68,7 @@ fun BackupScreen(
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+            AutoBackupStatus(state.autoBackup)
             if (state.busy) {
                 LinearProgressIndicator(
                     modifier = Modifier.fillMaxWidth().padding(top = Spacing.base),
@@ -95,4 +104,47 @@ fun BackupScreen(
             }
         }
     }
+}
+
+/**
+ * What the last automatic backup recorded. Over quota is the one worth shouting about: Android
+ * rejected the whole set, the database included, and nothing else would tell the user.
+ */
+@Composable
+private fun AutoBackupStatus(marker: AutoBackupMarker?) {
+    val lastBackupAt = marker?.lastBackupAt
+    val text =
+        when {
+            marker?.overQuota == true -> stringResource(R.string.backup_auto_over_quota)
+            lastBackupAt == null -> stringResource(R.string.backup_auto_none)
+            else -> {
+                val date =
+                    DateTimeFormatter
+                        .ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT)
+                        .format(lastBackupAt.atZone(ZoneId.systemDefault()))
+                val last = stringResource(R.string.backup_auto_last, date)
+                if (marker.leftOutThumbnails == 0) {
+                    last
+                } else {
+                    val leftOut =
+                        pluralStringResource(
+                            R.plurals.backup_auto_left_out,
+                            marker.leftOutThumbnails,
+                            marker.leftOutThumbnails,
+                        )
+                    "$last $leftOut"
+                }
+            }
+        }
+    Text(
+        text = text,
+        style = MaterialTheme.typography.bodyMedium,
+        color =
+            if (marker?.overQuota == true) {
+                MaterialTheme.colorScheme.error
+            } else {
+                MaterialTheme.colorScheme.onSurfaceVariant
+            },
+        modifier = Modifier.padding(top = Spacing.tight),
+    )
 }

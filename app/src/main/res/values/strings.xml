@@ -101,6 +101,15 @@
     <string name="backup_export_records">Export records</string>
     <string name="backup_export_everything">Export everything</string>
     <string name="backup_restore">Restore from a file…</string>
+    <!-- Android's own automatic backup to the user's Google account, as the app last saw it run. %1$s is a localised date and time. -->
+    <string name="backup_auto_last">Android last backed up the app on %1$s.</string>
+    <string name="backup_auto_none">Android has not backed up the app yet.</string>
+    <string name="backup_auto_over_quota">Android\'s last automatic backup was refused as too large, so it holds nothing from this app. Export a backup yourself.</string>
+    <!-- Follows backup_auto_last in the same paragraph. Thumbnails are the small copies of photos. -->
+    <plurals name="backup_auto_left_out">
+        <item quantity="one">%d older thumbnail did not fit and was left out.</item>
+        <item quantity="other">%d older thumbnails did not fit and were left out.</item>
+    </plurals>
 
     <!-- Licences -->
     <string name="licence_text_missing">The text of this licence is not bundled with the app.</string>
