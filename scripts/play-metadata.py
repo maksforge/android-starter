@@ -11,6 +11,7 @@ so a listing change is still one diff in one file, reviewed in a PR like anythin
                                     full_description.txt
                                     changelogs/<versionCode>.txt
                                     images/phoneScreenshots/1_home.png …
+                                    images/featureGraphic.png
 
 ⚠️ **Changelogs are named by versionCode, not by semver.** `406.txt`, not `1.9.0.txt` — supply keys
 release notes to the build they belong to, and a name Play cannot match is silently ignored rather
@@ -20,6 +21,15 @@ derives it from; pass `--version-code` when generating for a build that is not t
 Screenshots are copied from `art/play-screenshots/`, whose filenames carry both their order and their
 locale — `1_home-pl.png`. The locale suffix is stripped on the way in, because supply already knows
 the language from the directory it is putting the file in.
+
+Feature graphics are copied the same way: `art/play-feature-graphic.png` into the default language
+and `art/play-feature-graphic-<tag>.png` into that tag's. Play shows a language with no graphic of its
+own the default's, so only translated ones are worth a file. It is here at all because a graphic that
+only the Console holds goes stale unnoticed: an app built from this template had a layout fix sit in
+the repository for five weeks while Play served the old file.
+
+No file ends in a newline: supply uploads each verbatim and Play counts the newline against the
+limit, so a 500-character release note goes up as 501 and the whole release is refused.
 
 ⚠ **A blank field is written as no file at all, never as an empty one.** An empty file is a value:
 supply reads it and asks Play to store `""`, and Play refuses the whole edit - *"This app has no short
@@ -65,6 +75,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 LISTING = ROOT / "docs" / "store-listing.md"
 SCREENSHOTS = ROOT / "art" / "play-screenshots"
+FEATURE_GRAPHIC = ROOT / "art" / "play-feature-graphic.png"
+DEFAULT_LOCALE = "en-US"
 
 # Reuse the release-note parser rather than growing a second one — same document, same fenced-block
 # shape, and the locale table must not be allowed to disagree between the two.
@@ -180,6 +192,31 @@ def copy_screenshots(out: Path) -> dict[str, int]:
     return counts
 
 
+def copy_feature_graphics(out: Path) -> list[str]:
+    """`art/play-feature-graphic[-<tag>].png` -> each language's `images/featureGraphic.png`.
+
+    Returns the Play locales that got one. `art/make-feature-graphic.py` renders the sources; this only
+    carries them, so a re-render reaches Play on the next listing upload with nothing else to remember.
+    """
+    sources = {DEFAULT_LOCALE: FEATURE_GRAPHIC}
+    for png in sorted(FEATURE_GRAPHIC.parent.glob(f"{FEATURE_GRAPHIC.stem}-*.png")):
+        tag = png.stem.removeprefix(f"{FEATURE_GRAPHIC.stem}-")
+        locale = APP_TAG.get(tag)
+        if locale is None:
+            print(f"-- skipping {png.name}: unknown locale tag {tag!r}", file=sys.stderr)
+            continue
+        sources[locale] = png
+    copied = []
+    for locale, png in sources.items():
+        if not png.is_file():
+            continue
+        target = out / locale / "images"
+        target.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(png, target / "featureGraphic.png")
+        copied.append(locale)
+    return sorted(copied)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out", type=Path, required=True, help="fastlane/metadata/android")
@@ -217,13 +254,14 @@ def main() -> int:
         directory.mkdir(parents=True, exist_ok=True)
         for field, body in fields.items():
             if body:  # a blank is left out rather than written as "" - see the docstring
-                (directory / f"{field}.txt").write_text(body + "\n", encoding="utf-8")
+                (directory / f"{field}.txt").write_text(body, encoding="utf-8")
         if locale in notes:
             changelogs = directory / "changelogs"
             changelogs.mkdir(exist_ok=True)
-            (changelogs / f"{code}.txt").write_text(notes[locale] + "\n", encoding="utf-8")
+            (changelogs / f"{code}.txt").write_text(notes[locale], encoding="utf-8")
 
     shots = copy_screenshots(args.out)
+    graphics = copy_feature_graphics(args.out)
     complete = sorted(locale for locale, fields in listings.items() if all(fields.get(f) for f in LIMITS))
     incomplete = sorted(set(listings) - set(complete))
     print(
@@ -232,6 +270,7 @@ def main() -> int:
         + f"  notes: {len(notes)} (release {release}, changelog {code}.txt)"
     )
     print(f"screenshots: {sum(shots.values())} across {len(shots)} locales" if shots else "screenshots: none (art/play-screenshots/ absent — text-only run)")
+    print(f"feature graphics: {', '.join(graphics)}" if graphics else "feature graphics: none (art/play-feature-graphic.png absent)")
 
     for gap in gaps:
         print(f"{'FAILED' if args.strict else 'WARNING'}: {gap}", file=sys.stderr)

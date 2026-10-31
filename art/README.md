@@ -9,7 +9,7 @@ the `VectorDrawable`s.
 | `mark.py`'s MARK and HOLE curves | your concept image → `trace-mark.py` | **placeholder — replace** |
 | `concept.png` | the image the mark was traced from — **commit it**, with its provenance below | — |
 | `drawable/ic_launcher_{background,foreground,monochrome}.xml`, `drawable/ic_notification.xml`, `mipmap-*`, `play-icon-512.png` | `mark.py` → `make-launcher-icon.py` | generated |
-| `play-feature-graphic.png` (1024×500) | `mark.py` + `theme/Color.kt` (+ `feature-background.png` if present) → `make-feature-graphic.py` | generated |
+| `play-feature-graphic.png`, `play-feature-graphic-<tag>.png` (1024×500, one per translated listing; `COPY`) | `mark.py` + `theme/Color.kt` (+ `feature-background.png` if present) → `make-feature-graphic.py` | generated |
 | `play-screenshots/<n>_<scene>-<tag>.png` | `scripts/screenshots.py --build release --numbered` → `pad-screenshot.py` | — |
 
 ## The mark
@@ -61,7 +61,7 @@ python3 art/trace-mark.py concept.png   # prints cubic path data
 
 # 2. Regenerate everything that derives from it.
 python3 art/make-launcher-icon.py       # icons, mipmaps, the 512² Play asset
-python3 art/make-feature-graphic.py     # the 1024×500 listing graphic
+python3 art/make-feature-graphic.py     # the 1024×500 listing graphics
 ```
 
 `make-launcher-icon.py` prints a **safe-radius check** and will tell you when the art is clipped by

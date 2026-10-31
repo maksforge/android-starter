@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""Render the 1024x500 Play feature graphic to art/play-feature-graphic.png.
+"""Render the 1024x500 Play feature graphics, one per listing language in `COPY`.
+
+The default language's is `art/play-feature-graphic.png`; every other is
+`art/play-feature-graphic-<tag>.png`, tagged like the screenshots, and `scripts/play-metadata.py`
+carries each into its own listing language. A language with no graphic of its own shows the
+default's, so add one only where the copy is translated.
 
 Original art only: the mark comes from `mark.py`, the same declaration the launcher icon is
 generated from, so the two assets cannot drift into being different marks. Text is *rendered* with
@@ -11,7 +16,7 @@ glyph outlines as art.
 does not look like a bug: the graphic is correct in every local preview and in the Console's own
 uploader, and wrong only on the surface most people see it on. The app this template came from met
 it on a live listing, and the first app built from the template reproduced it almost exactly. So the
-layout is declared against the *cropped* frame — see CROP — and main() measures what it produced and
+layout is declared against the *cropped* frame — see CROP — and render() measures what it produced and
 exits non-zero rather than trusting that the constants still hold.
 
 **The colours are read out of `theme/Color.kt`**, never pasted: the palette is regenerated from seeds
@@ -32,13 +37,14 @@ from PIL import Image, ImageDraw, ImageFont
 
 import mark
 
-# The three strings this graphic is *about*. Edit them; everything else is layout.
-APP_NAME = "Starter"
-TAGLINE = "One line about your app"
-FEATURES = "Private  ·  Offline  ·  No ads  ·  Free"
-
 ART = Path(__file__).parent
-OUT = ART / "play-feature-graphic.png"
+
+# The strings this graphic is *about*, keyed by listing-language tag (None is the default language).
+# Edit them; everything else is layout. Translate from the English, per docs/translator-brief.md.
+APP_NAME = "Starter"
+COPY = {
+    None: ("One line about your app", "Private  ·  Offline  ·  No ads  ·  Free"),
+}
 BACKGROUND = ART / "feature-background.png"
 W, H = 1024, 500
 S = 4  # supersample factor; everything below is in final pixels, scaled by S at draw time
@@ -53,7 +59,7 @@ MARGIN = CROP + VISIBLE_MARGIN  # 108px from the canvas edge to any content, bot
 
 MARK_SIZE = 190
 MARK_CY = 215
-MIN_GAP = 24  # the copy must clear the mark by this much; main() checks it
+MIN_GAP = 24  # the copy must clear the mark by this much; render() checks it
 
 FONT_DIR = Path("/usr/share/fonts/truetype/noto")
 FONT_BOLD = FONT_DIR / "NotoSans-Bold.ttf"
@@ -144,7 +150,11 @@ def draw_mark(base, cx, cy, size):
     base.alpha_composite(layer)
 
 
-def main():
+def out_path(tag):
+    return ART / ("play-feature-graphic.png" if tag is None else f"play-feature-graphic-{tag}.png")
+
+
+def render(out_file, tagline_text, features_text):
     base = ground((W, H)).convert("RGBA").resize((W * S, H * S), Image.BICUBIC)
 
     mark_left = W - MARGIN - MARK_SIZE
@@ -157,28 +167,33 @@ def main():
 
     x = MARGIN * S
     d.text((x, 240 * S), APP_NAME, font=wordmark, fill=INK, anchor="ls")
-    d.text((x, 296 * S), TAGLINE, font=tagline, fill=TAGLINE_INK, anchor="ls")
-    d.text((x, 372 * S), FEATURES, font=features, fill=SUBTLE, anchor="ls")
+    d.text((x, 296 * S), tagline_text, font=tagline, fill=TAGLINE_INK, anchor="ls")
+    d.text((x, 372 * S), features_text, font=features, fill=SUBTLE, anchor="ls")
 
     out = base.resize((W, H), Image.LANCZOS).convert("RGB")  # RGB: Play rejects alpha
-    out.save(OUT, "PNG", optimize=True)
+    out.save(out_file, "PNG", optimize=True)
 
     # Measured, not assumed. Both of these have been wrong in a graphic generated from this file.
     widest = max(d.textlength(t, font=f) / S for t, f in
-                 ((APP_NAME, wordmark), (TAGLINE, tagline), (FEATURES, features)))
+                 ((APP_NAME, wordmark), (tagline_text, tagline), (features_text, features)))
     right = MARGIN + widest
     gap = mark_left - right
     clipped = right > W - MARGIN
     collides = gap < MIN_GAP
-    print(f"crop takes {CROP}px per side -> Play shows x {CROP}..{W - CROP}")
-    print(f"copy spans x {MARGIN}..{right:.0f}, mark x {mark_left}..{W - MARGIN}"
+    print(f"{out_file.name}: copy spans x {MARGIN}..{right:.0f}, mark x {mark_left}..{W - MARGIN}"
           f" — {'CLIPPED by the 16:9 crop' if clipped else 'inside the crop'}")
-    print(f"copy-to-mark gap {gap:.0f}px vs {MIN_GAP}px minimum — {'COLLIDES' if collides else 'ok'}")
-    print(f"{OUT}  {out.size[0]}x{out.size[1]}  {OUT.stat().st_size / 1024:.0f} KiB  mode={out.mode}")
+    print(f"  copy-to-mark gap {gap:.0f}px vs {MIN_GAP}px minimum — {'COLLIDES' if collides else 'ok'}")
+    print(f"  {out.size[0]}x{out.size[1]}  {out_file.stat().st_size / 1024:.0f} KiB  mode={out.mode}")
     if clipped or collides:
-        print("Shorten the copy or shrink MARK_SIZE; the file was written, but do not upload it.", file=sys.stderr)
+        print(f"Shorten {out_file.name}'s copy or shrink MARK_SIZE; it was written, but do not upload it.",
+              file=sys.stderr)
         return 1
     return 0
+
+
+def main():
+    print(f"crop takes {CROP}px per side -> Play shows x {CROP}..{W - CROP}")
+    return max(render(out_path(tag), *copy) for tag, copy in COPY.items())
 
 
 if __name__ == "__main__":
