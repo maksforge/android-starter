@@ -164,6 +164,9 @@ android {
                 "NewerVersionAvailable",
                 "OldTargetApi",
             )
+        // Resource shrinking strips an unused string from the release bundle, which fails
+        // `aab-locale.py` at publish time; this fails the PR instead.
+        error += "UnusedResources"
     }
 }
 
